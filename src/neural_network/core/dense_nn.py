@@ -34,10 +34,10 @@ class NetworkNeural:
 
 
     @staticmethod
-    def _init_layers(n_layers: int, n_layer_neurons: list, n_network_inputs: int) -> List[object]:
+    def _init_layers(n_layers: int, n_layer_neurons: list, n_network_inputs: int) -> List[LayerDense]:
         '''Initialise layers using kword args from __init__().'''
 
-        layers: List[object] = []
+        layers: List[LayerDense] = []
 
         # The first layer must be handled separately because the number of inputs to each layer
         # is defined by the user (with n_network_inputs)
@@ -54,6 +54,12 @@ class NetworkNeural:
             layers.append(layer)
         
         return layers
+    
+    def fwd(self, inputs: np.ndarray):
+        
+        for layer in self.layers:
+            layer.fwd(inputs)
+
             
 # Inherit from LayerGeneric later
 class LayerDense():
