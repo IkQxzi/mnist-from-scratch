@@ -4,12 +4,50 @@ Last Modified: Sprint 1
 Purpose: Create and propogate neural network
 '''
 
-from .base_classes import LayerGeneric
-
 import time
 from typing import Dict, List, Union
 
+# from .base_classes import LayerGeneric
+
+
 import numpy as np
+
+
+# Inherit from LayerGeneric later
+class LayerDense():
+
+    def __init__(self, n_neurons: int, n_inputs: int) -> None:
+        '''
+        Create a dense (fully-connected) layer with random weights and biases.
+        
+        Keyword Args: 
+            n_neurons -- The number of neurons for the layer to have.
+            n_inputs -- The number of inputs the layer should expect. 
+
+        Attributes:
+            self.weights -- The ndarray of random weights for each input with shape (n_inputs, n_neurons).
+            self.biases -- The ndarray of random biases for each neuron with shape (n_neurons, 1).
+        '''
+
+        self.weights: np.ndarray = np.random.rand(n_inputs, n_neurons)
+        self.biases: np.ndarray = np.random.rand(n_neurons, 1)
+
+    
+    def fwd(self, inputs: np.ndarray):
+        '''
+        Calculate the dot products of the inputs and weights, and add the biases.
+        
+        Keyword Args:
+            inputs -- np ndarray of a complementary shape to the layer weights.
+        
+        Attributes:
+            inputs -- same as kword arg.
+            outputs -- np ndarray of inputs ⋅ weights + biases.
+        '''
+
+        self.inputs = inputs
+
+        self.outputs = np.dot(inputs, self.weights.T) + self.biases
 
 
 class NetworkNeural:
@@ -30,7 +68,7 @@ class NetworkNeural:
         if n_layers != len(n_layer_neurons):
             raise IndexError('The number of layers must match the length of n_layer_neurons!')
 
-        self.layers: List[object] = self._init_layers(n_layers, n_layer_neurons, n_network_inputs)
+        self.layers: List[LayerDense] = self._init_layers(n_layers, n_layer_neurons, n_network_inputs)
 
 
     @staticmethod
@@ -46,7 +84,7 @@ class NetworkNeural:
 
         # The other layers can be done together because the number of inputs to each layer
         # is simply the number of neurons in the previous layer
-        for ind in range(1, n_layers+1): 
+        for ind in range(1, n_layers): 
 
             n_neurons = n_layer_neurons[ind]
             n_inputs = n_layer_neurons[ind-1]
@@ -60,42 +98,6 @@ class NetworkNeural:
         for layer in self.layers:
             layer.fwd(inputs)
 
-            
-# Inherit from LayerGeneric later
-class LayerDense():
-
-    def __init__(self, n_neurons: int, n_inputs: int) -> None:
-        '''
-        Create a dense (fully-connected) layer with random weights and biases.
-        
-        Keyword Args: 
-            n_neurons -- The number of neurons for the layer to have.
-            n_inputs -- The number of inputs the layer should expect. 
-
-        Attributes:
-            self.weights -- The ndarray of random weights for each input with shape (n_neurons, n_inputs).
-            self.biases -- The ndarray of random biases for each neuron with shape (n_neurons, 1).
-        '''
-
-        self.weights: np.ndarray = np.random.rand(n_neurons, n_inputs)
-        self.biases: np.ndarray = np.random.rand(n_neurons, 1)
-
-    
-    def fwd(self, inputs: np.ndarray):
-        '''
-        Calculate the dot products of the inputs and weights, and add the biases.
-        
-        Keyword Args:
-            inputs -- np ndarray of a complementary shape to the layer weights.
-        
-        Attributes:
-            inputs -- same as kword arg.
-            outputs -- np ndarray of inputs ⋅ weights + biases.
-        '''
-
-        self.inputs = inputs
-
-        self.outputs = np.dot(inputs, self.weights) + self.biases
 
 
 layer1 = LayerDense(3, 4)

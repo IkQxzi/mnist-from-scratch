@@ -42,9 +42,3 @@ class NN(LayerGeneric):
         pass
 
 
-layer = NN()
-print(dir(layer))
-
-print(layer.__class__.__name__)    
-
-
