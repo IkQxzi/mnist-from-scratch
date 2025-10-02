@@ -11,6 +11,7 @@ from typing import Dict, List, Union
 
 
 import numpy as np
+from colorama import Fore, Style
 
 
 # Inherit from LayerGeneric later
@@ -29,8 +30,8 @@ class LayerDense():
             self.biases -- The ndarray of random biases for each neuron with shape (n_neurons, 1).
         '''
 
-        self.weights: np.ndarray = np.random.rand(n_inputs, n_neurons)
-        self.biases: np.ndarray = np.random.rand(n_neurons, 1)
+        self.weights: np.ndarray = np.random.rand(n_neurons, n_inputs)
+        self.biases: np.ndarray = np.random.rand(1, n_neurons)
 
     
     def fwd(self, inputs: np.ndarray):
@@ -94,9 +95,25 @@ class NetworkNeural:
         return layers
     
     def fwd(self, inputs: np.ndarray):
-        
-        for layer in self.layers:
-            layer.fwd(inputs)
+        '''
+        Forward a set of inputs through the entire network.
+
+        Keyword Args:
+            inputs -- The inputs to the network
+        '''
+
+        # The inputs to the network need be passed only into the first layer
+        # not any subsequent ones
+        layer1 = self.layers[0]
+        layer1.fwd(inputs)
+
+        # For each subsequent layer, forward the outputs of the previous layer as its inputs
+        for layer_ind, layer in enumerate(self.layers[1:]):
+
+            print(Fore.RED + f'------------[DEBUG] Current Layer Index: {layer_ind}--------------', Style.RESET_ALL)
+            
+            prev_layer = self.layers[layer_ind - 1]
+            layer.fwd(prev_layer.outputs)
 
 
 

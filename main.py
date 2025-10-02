@@ -21,7 +21,7 @@ def scrap_test() -> None:
 
 def example_forward_test() -> None:
     # Example input data
-    n_layers = 2
+    n_layers = 3
     n_network_inputs = 4
 
     net = NetworkExample(n_layers, n_network_inputs)
