@@ -4,7 +4,7 @@ import numpy as np
 class Activation():
 
     @staticmethod
-    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray: # type: ignore
         pass
 
     def fwd(self, inputs) -> None:

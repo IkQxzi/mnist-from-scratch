@@ -8,7 +8,7 @@ import time
 from typing import Dict, List, Union
 
 # from .base_classes import LayerGeneric
-
+from tools.debugging import debug_style
 
 import numpy as np
 from colorama import Fore, Style
@@ -58,7 +58,7 @@ class NetworkNeural:
         Initialise a neural network with a number of layers, and number of neurons in each layer.
 
         Keyword Args:
-            n_layers -- The number of layers in the network (input, hidden & output).
+            n_layers -- The number of layers in the network (hidden & output, not incl. input).
             n_layer_neurons -- The number of neurons in each layer respectively (must be same size as n_layers).
             n_network_inputs -- The number of inputs to the network (ie the first layer).
         
@@ -81,14 +81,20 @@ class NetworkNeural:
         # The first layer must be handled separately because the number of inputs to each layer
         # is defined by the user (with n_network_inputs)
         n_layer1_neurons = n_layer_neurons[0]
-        layer = LayerDense(n_layer1_neurons, n_network_inputs)
+        layer1 = LayerDense(n_layer1_neurons, n_network_inputs)
+        layers.append(layer1)
+
+        print(debug_style(f'[NetworkNeural._init_layers()] Layer 0: [{n_layer1_neurons}, {n_network_inputs}]'))
 
         # The other layers can be done together because the number of inputs to each layer
         # is simply the number of neurons in the previous layer
-        for ind in range(1, n_layers): 
+        for ind in range(1, n_layers):
 
             n_neurons = n_layer_neurons[ind]
             n_inputs = n_layer_neurons[ind-1]
+
+            print(debug_style(f'[NetworkNeural._init_layers()] Layer {ind}: [{n_neurons}, {n_inputs}]'))
+
             layer = LayerDense(n_neurons, n_inputs)
             layers.append(layer)
         
@@ -110,9 +116,10 @@ class NetworkNeural:
         # For each subsequent layer, forward the outputs of the previous layer as its inputs
         for layer_ind, layer in enumerate(self.layers[1:]):
 
-            print(Fore.RED + f'------------[DEBUG] Current Layer Index: {layer_ind}--------------', Style.RESET_ALL)
             
-            prev_layer = self.layers[layer_ind - 1]
+            print(debug_style(f'[NetworkNeural.fwd()] Current Layer Index: {layer_ind}'))
+
+            prev_layer = self.layers[layer_ind]
             layer.fwd(prev_layer.outputs)
 
 

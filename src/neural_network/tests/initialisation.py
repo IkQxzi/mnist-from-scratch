@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from ..core import NetworkNeural
+from neural_network.core import NetworkNeural
 
 class NetworkExample:
     '''
@@ -36,8 +36,12 @@ class NetworkExample:
         self.n_layers = n_layers
         self.n_layer_neurons = self.gen_rand_network(n_layers)
 
+        # Initialise network
+        self.network = NetworkNeural(self.n_layers, self.n_layer_neurons, self.n_network_inputs)
+
         # Generate test data
-        self.test_data = self.gen_test_data(n_network_inputs, n_layer1_neurons=self.n_layer_neurons[0])
+        n_layer1_neurons = self.n_layer_neurons[0]
+        self.test_data = self.gen_test_data(n_network_inputs, n_layer1_neurons)
 
     
     def forward_test(self):
@@ -45,16 +49,15 @@ class NetworkExample:
         Test if forward pass works for the number of inputs and layers specified for this instance.
 
         Attributes Modified:
-            network -- NetworkNeural using attributes defined in __init__()
+            network -- Forwarded data to each layer.
 
         '''
-
-        self.network = NetworkNeural(self.n_layers, self.n_layer_neurons, self.n_network_inputs)
+        
         self.network.fwd(self.test_data)
 
         # Only runs if no error has been raised
-        print(f"Forward passes worked succesfully for {self.n_layers} layers.\n"
-          f"Neuron counts of every layer: {self.n_layer_neurons}")
+        print(f"Forward passes worked succesfully for {self.n_layers} layers with {self.n_network_inputs} inputs.\n"
+          f"Neuron counts of every layer: {self.n_layer_neurons}.\n")
 
 
 
@@ -92,4 +95,4 @@ class NetworkExample:
             test_data -- Randomly generated test_data, a mix of pos/neg floats.
         '''
 
-        return np.random.rand(n_network_inputs, n_layer1_neurons)
+        return np.random.rand(n_layer1_neurons, n_network_inputs)
