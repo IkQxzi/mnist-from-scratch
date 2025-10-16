@@ -110,6 +110,7 @@ class NetworkNeural:
 
         # The inputs to the network need be passed only into the first layer
         # not any subsequent ones
+        print(debug_style(f'[NetworkNeural.fwd()] Current Layer Index: 0'))
         layer1 = self.layers[0]
         layer1.fwd(inputs)
 
@@ -117,9 +118,9 @@ class NetworkNeural:
         for layer_ind, layer in enumerate(self.layers[1:]):
 
             
-            print(debug_style(f'[NetworkNeural.fwd()] Current Layer Index: {layer_ind}'))
+            print(debug_style(f'[NetworkNeural.fwd()] Current Layer Index: {layer_ind+1}'))
 
-            prev_layer = self.layers[layer_ind]
+            prev_layer = self.layers[layer_ind] # Uses index of new sliced list
             layer.fwd(prev_layer.outputs)
 
 

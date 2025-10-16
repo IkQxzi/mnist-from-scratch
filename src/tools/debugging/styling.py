@@ -1,9 +1,25 @@
 from colorama import Fore, Style
 
-def debug_style(text: str) -> str:
-    '''Print text with [DEBUG] & red colour.'''
+def style_text(text: str, colour: str, msg: str | None = None) -> str:
+    '''Print text with a chosen colour.'''
+    clr_code = getattr(Fore, colour.upper())
 
-    text = f'{Fore.RED}[DEBUG] {text}{Style.RESET_ALL}'
+    # eg [DEBUG]/[WARNING]
+    if msg:
+        return f'{clr_code}[{msg.upper()}] {text}{Style.RESET_ALL}'
     
-    return text
+    # No msg
+    return f'{clr_code}{text}{Style.RESET_ALL}'
+
+
+def debug_style(text: str) -> str:
+    '''Print text with [DEBUG] & green colour.'''
+
+    return style_text(text=text, colour='green', msg='debug')
+
+
+def warning_style(text: str) -> str:
+    '''Print text with [WARNING] & red colour.'''
+
+    return style_text(text=text, colour='red', msg='warning')
 

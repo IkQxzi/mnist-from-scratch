@@ -22,7 +22,7 @@ def scrap_test() -> None:
 
 def example_forward_test() -> None:
     # Example input data
-    n_layers = 3
+    n_layers = 20
     n_network_inputs = 4
 
     net = NetworkExample(n_layers, n_network_inputs)
@@ -36,6 +36,7 @@ def main() -> None:
 
     loops = 10 
     for x in range(loops):
+        print(debug_style(f'Loop {x+1}:'))
         example_forward_test()
     print(f'All {loops} loops completed successfully.')
 
