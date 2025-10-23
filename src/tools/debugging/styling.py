@@ -22,4 +22,3 @@ def warning_style(text: str) -> str:
     '''Print text with [WARNING] & red colour.'''
 
     return style_text(text=text, colour='red', msg='warning')
-

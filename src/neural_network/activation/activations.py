@@ -60,9 +60,47 @@ class ReLU(Activation):
         outputs = np.maximum(inputs, 0)
         return outputs
 
-relu = ReLU()
-test_data = np.random.randn(4, 3)
-print(test_data)
-relu.fwd(test_data)
-print(relu.outputs)
 
+class Sigmoid(Activation):
+    '''
+    Squashes inputs to between 0 & 1.
+    Formula: 1 / (1 + e^-x)
+    '''
+
+    @staticmethod
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
+        
+        exp_vals = np.exp(-inputs)
+        outputs = 1 / (1 + exp_vals)
+        return outputs
+    
+
+class Tanh(Activation):
+    '''
+    Squashes inputs to between -1 and 1.
+    Formula: (e^x - e^-x) / (e^x + e^-x)
+    '''
+
+    @staticmethod
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
+        
+        pos_exp_vals = np.exp(inputs)
+        neg_exp_vals = np.exp(-inputs)
+
+        outputs = (pos_exp_vals - neg_exp_vals) / (pos_exp_vals + neg_exp_vals)
+
+        return outputs
+
+
+def tanh_test():
+    relu = Tanh()
+
+    # Mix of pos/neg floats
+    test_data = np.random.randn(4, 3)
+    print(f'test data: {test_data}\n')
+    
+    # (Should be) floats between -1 & 1
+    relu.fwd(test_data)
+    print(f'outputs: {relu.outputs}\n')
+
+tanh_test()
