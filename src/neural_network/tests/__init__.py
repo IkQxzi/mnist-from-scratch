@@ -1,1 +1,1 @@
-from .initialisation import NetworkExample
+from .dummy_network import NetworkExample

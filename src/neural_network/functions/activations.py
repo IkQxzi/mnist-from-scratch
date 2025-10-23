@@ -52,7 +52,10 @@ class Activation():
 
 
 class ReLU(Activation):
-    '''Clips outputs below 0.'''
+    '''
+    Clips outputs below 0.
+    Formula: max(x, 0)
+    '''
 
     @staticmethod
     def _fwd_func(inputs: np.ndarray) -> np.ndarray:
@@ -92,15 +95,76 @@ class Tanh(Activation):
         return outputs
 
 
-def tanh_test():
-    relu = Tanh()
+class ReLULeaky(Activation):
+    '''
+    Makes values below 0 small using a leak rate.
+    Formula: max(x, leak_rate*x)
+    '''
+
+
+    def __init__(self, leak_rate: float) -> None:
+        '''Define leak rate (between 0 & 1) for outputs < 0.'''
+    
+        if leak_rate < 0:
+            raise ValueError('The leak rate must be between 0 & 1!')
+
+        super().__init__()
+
+        self.leak_rate = leak_rate
+
+
+    def _fwd_func(self, inputs: np.ndarray) -> np.ndarray:
+        
+        # leak_rate * inputs is only greater in the negative quadrant
+        small_outputs = self.leak_rate * inputs
+        print(f'small outputs: {small_outputs}\n')
+        outputs = np.maximum(small_outputs, inputs)
+        return outputs
+
+
+class Softmax(Activation):
+    '''
+    Convert raw network outputs into a probability distribution.
+    '''
+
+    @staticmethod
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
+        '''
+        Sum exponentiated inputs and divide each input by this sum.
+
+        Keywords:
+            inputs -- 
+        '''
+
+
+        exp_vals = np.exp(inputs)
+        exp_sum = np.sum(exp_vals)
+
+
+def leaky_relu_test():
+    print(debug_style('Leaky ReLU Test'))
+    activ_func = ReLULeaky(leak_rate=0.1)
 
     # Mix of pos/neg floats
     test_data = np.random.randn(4, 3)
     print(f'test data: {test_data}\n')
     
-    # (Should be) floats between -1 & 1
-    relu.fwd(test_data)
-    print(f'outputs: {relu.outputs}\n')
+    # (Should be) floats between 0 & 1
+    activ_func.fwd(test_data)
+    print(f'outputs: {activ_func.outputs}\n')
 
-tanh_test()
+def relu_test():
+    print(debug_style('ReLU Test'))
+    activ_func = ReLU()
+
+    # Mix of pos/neg floats
+    test_data = np.random.randn(4, 3)
+    print(f'test data: {test_data}\n')
+    
+    # (Should be) floats between 0 & 1
+    activ_func.fwd(test_data)
+    print(f'outputs: {activ_func.outputs}\n')
+
+
+
+
