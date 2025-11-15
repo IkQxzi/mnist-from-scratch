@@ -1,47 +1,45 @@
-
-from neural_network.core import NetworkNeural, LayerDense
-from neural_network.tests import NetworkExample
-from tools.debugging import debug_style
+'''
+The master file from which other functions and classes are called & instantiated. 
+Created: Sprint 1
+Last Modified: Sprint 2
+'''
 
 import numpy as np
-from colorama import Fore, Style
 
-def scrap_test() -> None:
-    n_layers = 2
-    n_network_inputs = 4
-    
-    test_data = np.array([[0.5, 3, 25],
-                            [4, 5.3, -3],
-                            [4.2, -5, 0.7],
-                            [4.3, 0.8, 0.3]])
-    print(test_data.shape)
-    
-    net = NetworkNeural(n_layers, [3, 4], n_network_inputs)
-    net.fwd(test_data)
-
-
-def example_forward_test() -> None:
-    # Example input data
-    n_layers = 20
-    n_network_inputs = 4
-
-    net = NetworkExample(n_layers, n_network_inputs)
-    print(debug_style(f'[NetworkExample] Layers: {net.n_layers}'))
-    print(debug_style(f'[NetworkNeural] Layers: {len(net.network.layers)}'))
-    net.forward_test()
+from neural import NetworkDense
+from neural.tests import NetworkDenseExample, gen_test_data
+from tools.debugging import debug_style
 
 
 def main() -> None:
-    # scrap_test()
+    
+    input_size: int = 256
+    layer_num = 3
+    neuron_upper_b = 16
+    loops = 1
 
-    loops = 10 
-    for x in range(loops):
-        print(debug_style(f'Loop {x+1}:'))
-        example_forward_test()
-    print(f'All {loops} loops completed successfully.')
+    for i in range(loops):
+        print(f"\n{debug_style(f'Loop {i+1}')}")
+        
+        test_net = NetworkDenseExample(input_size, layer_num, neuron_upper_b)
+        # print(debug_style(f'Network inputs:\n {test_net.network_inputs}'))
+        
+        test_net.network.fwd(test_net.network_inputs)
 
+        print(debug_style(f'[INPUTS]:\n {test_net.network_inputs}'))
+
+        # Print outputs for each layer
+        for layer_n, layer in enumerate(test_net.network.layers):
+            print(debug_style(f'[{layer_n}][{layer.__class__.__name__}] outputs:\n {layer.outputs}'))
+
+        # Print final outputs
+        print(debug_style(f'[FINAL OUTPUTS]:\n{test_net.network.conf_scores}'))
+        print(debug_style(f'[Sum across neurons][axis 1]:\n{np.sum(test_net.network.conf_scores, axis=1)}'))
 
 if __name__ == '__main__':
     main()
 
 # main.py
+
+
+

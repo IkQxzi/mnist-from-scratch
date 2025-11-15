@@ -7,48 +7,8 @@ Purpose:
 
 import numpy as np 
 
+from neural.core.base import Activation
 from tools.debugging import debug_style
-
-class Activation():
-    '''A generic activation class for all activation functions.'''
-
-    def __init_subclass__(cls) -> None:
-        
-        # Calls the __init_subclass__ for all parents
-        # to prevent overriding parent class behaviour
-        super().__init_subclass__()
-
-        # All activation functions require forwarding logic for fwd() to work
-        if '_fwd_func' not in cls.__dict__:
-            print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
-
-        # Check for bwd() later
-
-    @staticmethod
-    def _fwd_func(inputs: np.ndarray) -> np.ndarray: # type: ignore
-        '''
-        The forwarding logic calculation.
-        
-        Keyword Args:
-            inputs -- the inputs to the activation function (output from dense layer)
-
-        '''
-        pass
-
-    def fwd(self, inputs: np.ndarray) -> None:
-        '''
-        Performs forward pass using _fwd_func().
-
-        Attributes:
-            outputs -- the outputs of the forward pass
-        '''
-
-        self.outputs = self._fwd_func(inputs)
-
-    def bwd(self) -> None:
-        '''Calculates the derivative of each layer.'''
-        
-        pass
 
 
 class ReLU(Activation):
@@ -71,10 +31,11 @@ class Sigmoid(Activation):
     '''
 
     @staticmethod
-    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
-        
-        exp_vals = np.exp(-inputs)
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray:        
+
+        exp_vals = np.exp(inputs)
         outputs = 1 / (1 + exp_vals)
+        
         return outputs
     
 
@@ -113,12 +74,12 @@ class ReLULeaky(Activation):
         self.leak_rate = leak_rate
 
 
-    def _fwd_func(self, inputs: np.ndarray) -> np.ndarray:
+    def _fwd_func(self, inputs: np.ndarray) -> np.ndarray: # type: ignore
         
         # leak_rate * inputs is only greater in the negative quadrant
         small_outputs = self.leak_rate * inputs
-        print(f'small outputs: {small_outputs}\n')
         outputs = np.maximum(small_outputs, inputs)
+
         return outputs
 
 
@@ -128,20 +89,23 @@ class Softmax(Activation):
     '''
 
     @staticmethod
-    def _fwd_func(inputs: np.ndarray) -> np.ndarray:
+    def _fwd_func(inputs: np.ndarray) -> np.ndarray: # type: ignore 
         '''
-        Sum exponentiated inputs and divide each input by this sum.
-
-        Keywords:
-            inputs -- 
-        '''
-
+        Sum exponentiated inputs and divide each exponentiated input by this sum.
+        '''        
 
         exp_vals = np.exp(inputs)
-        exp_sum = np.sum(exp_vals)
+
+        # axis 0 = batch-wise, axis 1 = neuron-wise
+        exp_sum = np.sum(exp_vals, axis=1, keepdims=True) 
+
+        outputs = exp_vals / exp_sum
+
+        return outputs
 
 
 def leaky_relu_test():
+    
     print(debug_style('Leaky ReLU Test'))
     activ_func = ReLULeaky(leak_rate=0.1)
 
@@ -167,4 +131,5 @@ def relu_test():
 
 
 
+__all__ = ["ReLU", "Sigmoid", "Tanh", "ReLULeaky", "Softmax"]
 

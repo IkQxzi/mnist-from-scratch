@@ -1,1 +1,0 @@
-from .dense_nn import NetworkNeural, LayerDense

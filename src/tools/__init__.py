@@ -1,1 +1,3 @@
-from .debugging import debug_style
+from . import debugging
+
+__all__ = ["debugging"]
