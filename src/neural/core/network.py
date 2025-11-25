@@ -119,7 +119,7 @@ class NetworkDense:
                     act_layers.append(activ)
 
                 case _:
-                    raise NotImplementedError(f"Activation '{act}' doesn't exist")
+                    raise NotImplementedError(f"Activation '{act}' doesn't exist.")
             
         return act_layers
 

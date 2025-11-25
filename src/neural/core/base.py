@@ -84,14 +84,14 @@ class Loss():
         super().__init_subclass__()
 
         # All loss functions require forwarding logic for fwd() to work
-        if '_fwd_func' not in cls.__dict__:
+        if '_calc_func' not in cls.__dict__:
             print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
 
         # Check for bwd() later
 
 
     @staticmethod
-    def _fwd_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def _calc_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
         '''
         The loss calculation.
         
@@ -103,7 +103,7 @@ class Loss():
         pass
 
 
-    def fwd(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> None:
+    def calculate(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> None:
         '''
         Performs forward pass using _fwd_func().
 
@@ -111,10 +111,10 @@ class Loss():
             outputs -- the outputs of the forward pass
         '''
 
-        self.outputs = self._fwd_func(pred_classes, true_classes)
+        self.outputs = self._calc_func(pred_classes, true_classes)
 
 
-    def bwd(self) -> None:
+    def gradient(self) -> None:
         '''Calculates the derivative of each layer.'''
         
         pass

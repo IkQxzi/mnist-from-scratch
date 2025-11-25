@@ -15,7 +15,7 @@ class CategoricalCrossEntropy(Loss):
     '''
 
     @staticmethod
-    def _fwd_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def _calc_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
         '''
         The CCE loss calculation.
         
@@ -25,7 +25,7 @@ class CategoricalCrossEntropy(Loss):
         '''
 
         exp_pred_classes = -1 * np.log(pred_classes)
-        loss_vals = np.dot(exp_pred_classes, true_classes) # for each individual sample
+        loss_vals = np.dot(exp_pred_classes, true_classes.T) # for each individual sample
         
         # Taking the sum of all losses
         # which looks like:
@@ -34,7 +34,8 @@ class CategoricalCrossEntropy(Loss):
         loss_sum = np.sum(loss_vals)
         
         # Taking the average loss for the entire batch
-        batch_loss = loss_sum / pred_classes.shape(1)
+        print(loss_sum)
+        batch_loss = loss_sum / pred_classes.shape[1]
         return batch_loss
 
 
