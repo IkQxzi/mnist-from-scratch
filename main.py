@@ -7,11 +7,15 @@ Last Modified: Sprint 2
 import numpy as np
 
 from neural import NetworkDense
-from neural.tests import NetworkDenseExample, gen_test_one_hot
+from neural.tests import NetworkDenseExample, gen_batch_data, gen_test_one_hot
+from neural.tests.data import gen_test_data
 from tools.debugging import debug_style
+
+from neural.layers import LayerDense
+from neural.layers.activations import * 
 from neural.layers.loss import CategoricalCrossEntropy
 
-def main() -> None:
+def test_pass() -> None:
     
     batch_size: int = 256
     layer_num = 3
@@ -41,6 +45,31 @@ def main() -> None:
         loss = CategoricalCrossEntropy()
         loss.calculate(test_net.network.conf_scores, true_classes)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
+
+
+def main() -> None:
+
+    n_inputs = 784
+    n_neurons = 64
+    n_batches = 12
+
+    layers = [
+        LayerDense(n_neurons, n_inputs),
+        ReLU(),
+        LayerDense(16, n_inputs=n_neurons),
+        ReLU(),
+        LayerDense(10, 16),
+        Softmax()
+    ]
+
+    network = NetworkDense(layers=layers)
+
+    test_data = gen_test_data(n_batches=n_batches, n_inputs=n_inputs)
+
+    network.fwd(test_data)
+
+    print(debug_style(f'Network conf scores: {network.conf_scores.shape}\n'
+                      f'{network.conf_scores}'))
 
 if __name__ == '__main__':
     main()

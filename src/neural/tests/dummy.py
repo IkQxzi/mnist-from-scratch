@@ -16,7 +16,7 @@ from tools.debugging import debug_style
 # from neural.core import NetworkNeural
 
 
-def gen_test_data(batch_size: int, layer1_size: int) -> np.ndarray:
+def gen_batch_data(batch_size: int, layer1_size: int) -> np.ndarray:
     '''
     Generate random test data of shape (layer1_size, batch_size) to be passed into the network.
 
@@ -114,7 +114,7 @@ class NetworkDenseExample:
         else:
             self.layer_arch = self.gen_layer_arch(layer_num, neuron_upper_b)
         
-        self.network_inputs = gen_test_data(batch_size=self.batch_size, layer1_size=self.layer_arch[0]) # pyright: ignore[reportArgumentType]
+        self.network_inputs = gen_batch_data(batch_size=self.batch_size, layer1_size=self.layer_arch[0]) # pyright: ignore[reportArgumentType]
 
         # Leaky ReLU requires a leak rate (0 < float < 1)
         if 'ReLULeaky' in self.layer_arch:
@@ -134,7 +134,7 @@ class NetworkDenseExample:
 #     Methods: 
 #         forward_test()
 #         gen_rand_network() [staticmethod]
-#         gen_test_data() [staticmethod]
+#         gen_batch_data() [staticmethod]
 
 #     '''
 
@@ -159,7 +159,7 @@ class NetworkDenseExample:
 
 #         # Generate test data
 #         layer1_size = self.n_layer_neurons[0]
-#         self.test_data = self.gen_test_data(batch_size, layer1_size)
+#         self.test_data = self.gen_batch_data(batch_size, layer1_size)
 
     
 #     def forward_test(self):
@@ -197,4 +197,4 @@ class NetworkDenseExample:
         
 #         return n_layer_neurons
 
-__all__ = ["NetworkDenseExample", "gen_test_data"]
+__all__ = ["NetworkDenseExample", "gen_batch_data"]

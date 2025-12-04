@@ -46,7 +46,8 @@ class Activation():
         if '_fwd_func' not in cls.__dict__:
             print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
 
-        # Check for bwd() later
+        if '_bwd_func' not in cls.__dict__:
+            print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
     @staticmethod
     def _fwd_func(inputs: np.ndarray) -> np.ndarray: # type: ignore
@@ -69,9 +70,15 @@ class Activation():
 
         self.outputs = self._fwd_func(inputs)
 
-    def bwd(self) -> None:
-        '''Calculates the derivative of each layer.'''
-        
+
+    def bwd(self, chain_dvals: np.ndarray) -> None: # type: ignore
+        '''
+        Performs forward pass using _fwd_func().
+
+        Attributes:
+            input_dvals -- The derivatives of the output w.r.t inputs.
+        '''
+
         pass
 
 
@@ -114,7 +121,11 @@ class Loss():
         self.outputs = self._calc_func(pred_classes, true_classes)
 
 
-    def gradient(self) -> None:
-        '''Calculates the derivative of each layer.'''
+    def bwd(self) -> None:
+        '''Calculates the derivative of each layer using _bwd_func().
         
+        Attributes:
+            dvalues -- the derivatives of the layer.
+        '''
+
         pass

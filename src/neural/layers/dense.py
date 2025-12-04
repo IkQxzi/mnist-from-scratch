@@ -17,10 +17,13 @@ class LayerDense():
             self.biases -- The ndarray of random biases for each neuron with shape (n_neurons, 1).
         '''
 
+
+        # For debugging/printing later 
+        self.n_neurons = n_neurons
+        self.n_inputs = n_inputs
+
         self.weights: np.ndarray = np.random.rand(n_neurons, n_inputs)
-        
-        # Normalise weights to be N(0, 1)
-        self.weights -= self.weights.mean(axis=1, keepdims=True)
+        self.weights -= self.weights.mean(axis=1, keepdims=True) # Normalise weights to be N(0, 1)
         
         self.biases: np.ndarray = np.zeros((1, n_neurons))
 
@@ -30,7 +33,7 @@ class LayerDense():
         Calculate the dot products of the inputs and weights, and add the biases.
         
         Keyword Args:
-            inputs -- np ndarray of a complementary shape to the layer weights.
+            inputs -- np ndarray of the same shape as layer weights (n_neurons, n_inputs).
         
         Attributes:
             inputs -- same as kword arg.
@@ -40,3 +43,31 @@ class LayerDense():
         self.inputs = inputs
 
         self.outputs = np.dot(inputs, self.weights.T) + self.biases
+
+    
+    def bwd(self, chain_dvals: np.ndarray) -> None:
+        '''
+        Calculate the partial derivatives of the outputs w.r.t to different parameters.
+        
+        Keyword Args:
+            chain_dvals - derivatives of layer ahead.
+        
+        Attributes:
+            weight_dvals -- derivatives of outputs w.r.t weights.
+            input_dvals -- derivatives of outputs w.r.t inputs.
+            bias_dvals -- derivatives of outputs w.r.t biases.
+        '''
+
+        # derivative of weights = inputs
+        local_weight_dvals = self.inputs
+        self.weight_dvals = np.dot(local_weight_dvals, chain_dvals.T)
+
+        # derivative of inputs = weights
+        local_input_dvals = self.weights
+        self.input_dvals = np.dot(local_input_dvals, chain_dvals.T)
+
+        # derivative of biases = 1 
+        local_bias_dvals = np.ones_like(self.biases)
+        self.bias_dvals = np.dot(local_bias_dvals, chain_dvals.T)
+
+

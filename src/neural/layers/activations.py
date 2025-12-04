@@ -22,6 +22,12 @@ class ReLU(Activation):
         
         outputs = np.maximum(inputs, 0)
         return outputs
+    
+    def bwd(self, chain_dvals: np.ndarray) -> None:
+        
+        local_dvals = self.outputs
+
+        self.input_dvals = np.dot(local_dvals, chain_dvals.T)
 
 
 class Sigmoid(Activation):
