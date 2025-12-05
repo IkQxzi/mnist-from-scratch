@@ -37,13 +37,13 @@ def test_pass() -> None:
             print(debug_style(f'[{layer_n}][{layer.__class__.__name__}] outputs:\n {layer.outputs}'))
 
         # Print final outputs
-        print(debug_style(f'[FINAL OUTPUTS]:\n{test_net.network.conf_scores}'))
-        print(debug_style(f'[Sum across neurons][axis 1]:\n{np.sum(test_net.network.conf_scores, axis=1)}'))
+        print(debug_style(f'[FINAL OUTPUTS]:\n{test_net.network.pred_classes}'))
+        print(debug_style(f'[Sum across neurons][axis 1]:\n{np.sum(test_net.network.pred_classes, axis=1)}'))
 
         true_classes = gen_test_one_hot(layer_arch=test_net.layer_arch, batch_size=batch_size) # pyright: ignore[reportArgumentType]
 
         loss = CategoricalCrossEntropy()
-        loss.calculate(test_net.network.conf_scores, true_classes)
+        loss.calculate(test_net.network.pred_classes, true_classes)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
 
 
@@ -68,17 +68,19 @@ def main() -> None:
 
     network.fwd(test_data)
 
-    print(debug_style(f'Network pred_classes: {network.pred_classes.shape}\n'
+    print(debug_style(f'Network pred_classes {network.pred_classes.shape}:\n'
                       f'{network.pred_classes}'))
     
-    print(network.layers[-1].outputs)
+
     cor_outputs = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
-    print(cor_outputs.shape, network.pred_classes.shape)
-    print(np.sum(cor_outputs * network.pred_classes, axis=1))
+    
+    # print(cor_outputs.shape, network.pred_classes.shape)
+    # print(np.sum(cor_outputs * network.pred_classes, axis=1))
 
     loss = CategoricalCrossEntropy()
-    # loss.calculate()
+    loss.calculate(network.pred_classes, cor_outputs)
+    print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
 
 if __name__ == '__main__':
     main()

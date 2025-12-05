@@ -7,6 +7,7 @@ Last modified: Sprint 2
 import numpy as np
 
 from neural.core.base import Loss
+from tools.debugging.styling import debug_style
 
 
 class CategoricalCrossEntropy(Loss):
@@ -17,26 +18,25 @@ class CategoricalCrossEntropy(Loss):
     @staticmethod
     def _calc_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
         '''
-        The CCE loss calculation.
+        The CCE loss calculation, averaged over a batch of inputs.
         
         Keyword Args:
             pred_classes -- predicted classes from the final layer
             true_classes -- one-hot vectors of the correct/intended outputs
         '''
 
-        exp_pred_classes = -1 * np.log(pred_classes)
-        loss_vals = np.dot(exp_pred_classes, true_classes.T) # for each individual sample
+        # Perform the element wise product of true_classes and pred_classes
+        # to get a list of their products (zeros and then relevant values)
+        rel_list = true_classes * np.log(pred_classes)
         
-        # Taking the sum of all losses
-        # which looks like:
-        # [[0 0 0 loss 0 0]
-        #  [0 loss 0 0 0 0]] -> 2*loss
-        loss_sum = np.sum(loss_vals)
-        
-        # Taking the average loss for the entire batch
-        print(loss_sum)
-        batch_loss = loss_sum / pred_classes.shape[1]
-        return batch_loss
+        # Then sum the 2D array of relevant predictions
+        # to get the relevant predictions for each sample in one value
+        total_pred = np.sum(rel_list) 
+
+        # Multiply the sum of all predicted values by -1/N (batch size/# samples)  
+        loss_vals = (-1 / pred_classes.shape[0]) * total_pred
+
+        return loss_vals
 
     def bwd(self) -> None:
         pass
