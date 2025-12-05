@@ -51,7 +51,7 @@ def main() -> None:
 
     n_inputs = 784
     n_neurons = 64
-    n_batches = 12
+    n_batches = 2
 
     layers = [
         LayerDense(n_neurons, n_inputs),
@@ -68,8 +68,17 @@ def main() -> None:
 
     network.fwd(test_data)
 
-    print(debug_style(f'Network conf scores: {network.conf_scores.shape}\n'
-                      f'{network.conf_scores}'))
+    print(debug_style(f'Network pred_classes: {network.pred_classes.shape}\n'
+                      f'{network.pred_classes}'))
+    
+    print(network.layers[-1].outputs)
+    cor_outputs = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
+    print(cor_outputs.shape, network.pred_classes.shape)
+    print(np.sum(cor_outputs * network.pred_classes, axis=1))
+
+    loss = CategoricalCrossEntropy()
+    # loss.calculate()
 
 if __name__ == '__main__':
     main()

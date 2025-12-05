@@ -38,5 +38,6 @@ class CategoricalCrossEntropy(Loss):
         batch_loss = loss_sum / pred_classes.shape[1]
         return batch_loss
 
-
+    def bwd(self) -> None:
+        pass
 

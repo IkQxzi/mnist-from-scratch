@@ -25,9 +25,9 @@ class ReLU(Activation):
     
     def bwd(self, chain_dvals: np.ndarray) -> None:
         
-        local_dvals = self.outputs
+        local_input_dvals = self.outputs
 
-        self.input_dvals = np.dot(local_dvals, chain_dvals.T)
+        self.input_dvals = np.dot(local_input_dvals, chain_dvals.T)
 
 
 class Sigmoid(Activation):

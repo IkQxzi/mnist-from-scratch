@@ -94,7 +94,9 @@ class Loss():
         if '_calc_func' not in cls.__dict__:
             print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
 
-        # Check for bwd() later
+        if 'bwd' not in cls.__dict__:
+            print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
+
 
 
     @staticmethod
@@ -122,7 +124,7 @@ class Loss():
 
 
     def bwd(self) -> None:
-        '''Calculates the derivative of each layer using _bwd_func().
+        '''Calculates the derivative of loss output w.r.t inputs.
         
         Attributes:
             dvalues -- the derivatives of the layer.
