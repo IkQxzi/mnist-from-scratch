@@ -43,32 +43,23 @@ class Activation():
         super().__init_subclass__()
 
         # All activation functions require forwarding logic for fwd() to work
-        if '_fwd_func' not in cls.__dict__:
+        if 'fwd' not in cls.__dict__:
             print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
 
-        if '_bwd_func' not in cls.__dict__:
+        if 'bwd' not in cls.__dict__:
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
-    @staticmethod
-    def _fwd_func(inputs: np.ndarray) -> np.ndarray: # type: ignore
-        '''
-        The forwarding logic calculation.
-        
-        Keyword Args:
-            inputs -- the inputs to the activation function (output from dense layer)
-
-        '''
-        pass
 
     def fwd(self, inputs: np.ndarray) -> None:
         '''
-        Performs forward pass using _fwd_func().
+        Performs forward pass.
 
         Attributes:
-            outputs -- the outputs of the forward pass
+            outputs -- the outputs of the forward pass.
         '''
 
-        self.outputs = self._fwd_func(inputs)
+        self.outputs: np.ndarray
+        pass
 
 
     def bwd(self, chain_dvals: np.ndarray) -> None: # type: ignore
@@ -82,6 +73,13 @@ class Activation():
         pass
 
 
+# class ActivationOutput(Activation):
+
+#     def bwd(self, chain_dvals: np.ndarray, true_classes: np.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
+
+#         pass
+
+
 class Loss():
 
     def __init_subclass__(cls) -> None:
@@ -91,36 +89,24 @@ class Loss():
         super().__init_subclass__()
 
         # All loss functions require forwarding logic for fwd() to work
-        if '_calc_func' not in cls.__dict__:
-            print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
+        if 'calculate' not in cls.__dict__:
+            print(f'WARNING: No calculate() method implemented for layer type: {cls.__name__}')
 
         if 'bwd' not in cls.__dict__:
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
 
+    def calculate(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+        '''
+        Calculates CCE Loss.
 
-    @staticmethod
-    def _calc_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+        :param pred_classes: The network's prediction after Softmax pass.
+        :param true_classes: The correct classes, one-hot-encoded.
+        attributes:
+        input_dvals: dvals w.r.t inputs.
         '''
-        The loss calculation.
-        
-        Keyword Args:
-            pred_classes -- predicted classes from the final layer
-            true_classes -- indexes of the correct/intended outputs
-            
-        '''
+
         pass
-
-
-    def calculate(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> None:
-        '''
-        Performs forward pass using _fwd_func().
-
-        Attributes:
-            outputs -- the outputs of the forward pass
-        '''
-
-        self.outputs = self._calc_func(pred_classes, true_classes)
 
 
     def bwd(self) -> None:

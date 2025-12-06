@@ -15,8 +15,7 @@ class CategoricalCrossEntropy(Loss):
     Calculate categorical cross-entropy loss using one-hot encoded vectors
     '''
 
-    @staticmethod
-    def _calc_func(pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def calculate(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
         '''
         The CCE loss calculation, averaged over a batch of inputs.
         
@@ -24,6 +23,10 @@ class CategoricalCrossEntropy(Loss):
             pred_classes -- predicted classes from the final layer
             true_classes -- one-hot vectors of the correct/intended outputs
         '''
+
+        self.pred_classes = pred_classes
+        self.true_classes = true_classes
+        self.batch_size = pred_classes.shape[0]
 
         # Perform the element wise product of true_classes and pred_classes
         # to get a list of their products (zeros and then relevant values)
@@ -34,10 +37,21 @@ class CategoricalCrossEntropy(Loss):
         total_pred = np.sum(rel_list) 
 
         # Multiply the sum of all predicted values by -1/N (batch size/# samples)  
-        loss_vals = (-1 / pred_classes.shape[0]) * total_pred
+        self.outputs = (-1 / self.batch_size) * total_pred
 
-        return loss_vals
 
     def bwd(self) -> None:
-        pass
+        '''
+        Calculates the derivatives of CCE Loss w.r.t inputs.
+        
+        :param self: Description
+        '''
+        
+        # - 1 / sj (sj = pj)
+        cor_pred_arr = self.true_classes * self.pred_classes
+        cor_pred_list = np.sum(cor_pred_arr, axis=1)
+
+        # dvals = -1 / sj (sj = pj)
+        local_input_dvals = (-1 * np.ones_like(cor_pred_list)) / cor_pred_list 
+        self.input_dval = np.sum(local_input_dvals) / self.batch_size
 

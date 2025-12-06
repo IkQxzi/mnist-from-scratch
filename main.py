@@ -80,7 +80,12 @@ def main() -> None:
 
     loss = CategoricalCrossEntropy()
     loss.calculate(network.pred_classes, cor_outputs)
-    print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
+    print(f"\n{debug_style(f'[Avg. Loss]: {loss.outputs}')}")
+
+    loss.bwd()
+    print(debug_style(f'[Avg. Loss Derivative] {loss.input_dval}'))
+
+    network.layers[-2].bwd(loss.input_dval)
 
 if __name__ == '__main__':
     main()
