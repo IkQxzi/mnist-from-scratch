@@ -33,11 +33,11 @@ class CategoricalCrossEntropy(Loss):
         rel_list = true_classes * np.log(pred_classes)
         
         # Then sum the 2D array of relevant predictions
-        # to get the relevant predictions for each sample in one value
-        total_pred = np.sum(rel_list) 
+        # to get the relevant predictions for each sample in one list
+        total_pred_list = np.sum(rel_list, axis = 1) 
 
-        # Multiply the sum of all predicted values by -1/N (batch size/# samples)  
-        self.outputs = (-1 / self.batch_size) * total_pred
+        # Multiply the sum of all predicted values by -1/N (greater loss = worse)
+        self.outputs = -1 * total_pred_list
 
 
     def bwd(self) -> None:
@@ -47,11 +47,17 @@ class CategoricalCrossEntropy(Loss):
         :param self: Description
         '''
         
-        # - 1 / sj (sj = pj)
+        # - 1 / sj
         cor_pred_arr = self.true_classes * self.pred_classes
-        cor_pred_list = np.sum(cor_pred_arr, axis=1)
 
-        # dvals = -1 / sj (sj = pj)
-        local_input_dvals = (-1 * np.ones_like(cor_pred_list)) / cor_pred_list 
-        self.input_dval = np.sum(local_input_dvals) / self.batch_size
+        # dvals = -1 / sj
+        neg_ones = -1 * np.ones_like(cor_pred_arr)
+        zeros = np.zeros_like(cor_pred_arr)
+
+        # Do -1 / sj, skipping div 0 and replacing with 0
+        self.input_dvals = np.divide(neg_ones, cor_pred_arr, out=zeros, where=cor_pred_arr!=0)
+        
+
+
+        # self.input_dval = np.sum(local_input_dvals) / self.batch_size
 

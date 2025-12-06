@@ -141,7 +141,7 @@ class Softmax(Activation):
 
         # Multiply -si by sj by creating an arr with the cor vals on diagonal
         cor_pred_diag = np.diag(cor_pred_list)
-        incor_pred_dvals = np.dot(-1 * incor_pred_arr, cor_pred_diag)
+        incor_pred_dvals = np.dot(cor_pred_diag, -1 * incor_pred_arr)
 
         # Dvals at i /= j will be 0, because cor_pred_arr has sj and 0 otherwise
         cor_pred_dvals = cor_pred_arr * (np.ones_like(cor_pred_arr) - cor_pred_arr)
@@ -150,7 +150,11 @@ class Softmax(Activation):
         local_input_dvals = incor_pred_dvals + cor_pred_dvals
         self.local_input_dvals = local_input_dvals
 
-        self.input_dvals = chain_dvals * local_input_dvals
+        # Remove all the zeros from loss_dvals
+        # then multiply every sample by the derivative of loss w.r.t correct index input
+        cor_loss_dvals = np.sum(chain_dvals, axis=1)
+        cor_loss_dvals_diag = np.diag(cor_loss_dvals)
+        self.input_dvals = np.dot(cor_loss_dvals_diag, local_input_dvals)
 
 
         

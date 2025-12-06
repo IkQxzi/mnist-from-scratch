@@ -80,12 +80,17 @@ def main() -> None:
 
     loss = CategoricalCrossEntropy()
     loss.calculate(network.pred_classes, cor_outputs)
-    print(f"\n{debug_style(f'[Avg. Loss]: {loss.outputs}')}")
+    print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}")
 
     loss.bwd()
-    print(debug_style(f'[Avg. Loss Derivative] {loss.input_dval}'))
+    print(debug_style(f'[Loss Derivative] {loss.input_dvals}'))
 
-    network.layers[-2].bwd(loss.input_dval)
+    smax: Softmax = network.layers[-1] # type: ignore
+    smax.bwd(loss.input_dvals, true_classes=cor_outputs)
+    print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
+                      f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
+
+
 
 if __name__ == '__main__':
     main()
