@@ -4,7 +4,25 @@ import numpy as np
 
 from tools.debugging import warning_style
 
-class LayerGeneric:
+
+class Network:
+    
+    def __init__(self, layers: list[object], *args, **kwargs) -> None:
+        '''Initialise a network using the architecture specified.'''
+        pass
+
+
+    def fwd(self, inputs: np.ndarray, *args, **kwargs) -> None:
+        '''Forward inputs through the network.'''
+        pass
+
+
+    def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray, *args, **kwargs) -> None:
+        '''Backpropogate through the network.'''
+        pass
+
+
+class Layer:
     '''A generic structure which will be used for both core layers and activation functions.'''
 
     def __init_subclass__(cls) -> None:
@@ -22,18 +40,17 @@ class LayerGeneric:
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         pass
-
 
     def fwd(self, inputs: np.ndarray):
         pass
 
-    def bwd(self, dvalues: np.ndarray):
+    def bwd(self, dvalues: np.ndarray, *args, **kwargs):
         pass
 
 
-class Activation():
+class Activation(Layer):
     '''A generic activation class for all activation functions.'''
 
     def __init_subclass__(cls) -> None:
@@ -117,3 +134,17 @@ class Loss():
         '''
 
         pass
+
+
+class Optimiser:
+
+    def __init__(self, network: object, *args, **kwargs):
+        '''Save Optimiser hyperparameters.'''
+        pass
+    
+
+    def update_params(self, *args, **kwargs) -> None:
+        '''Update network parameters using calculated gradients/dvals.'''
+
+        pass
+

@@ -1,8 +1,10 @@
 import numpy as np
 
+from neural.core.base import Layer
+
 
 # Inherit from LayerGeneric later
-class LayerDense():
+class LayerDense(Layer):
 
     def __init__(self, n_neurons: int, n_inputs: int) -> None:
         '''

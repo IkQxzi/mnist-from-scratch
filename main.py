@@ -13,7 +13,9 @@ from tools.debugging import debug_style
 
 from neural.layers import LayerDense
 from neural.layers.activations import * 
-from neural.layers.loss import CategoricalCrossEntropy
+from neural.loss import CategoricalCrossEntropy
+from neural.optimisers import StochasticGradientDescent
+
 
 def test_pass() -> None:
     
@@ -47,11 +49,32 @@ def test_pass() -> None:
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
 
 
+def manual_bwd(network: NetworkDense, loss: CategoricalCrossEntropy, cor_outputs: np.ndarray) -> None:
+    
+    smax: Softmax = network.layers[-1] # type: ignore
+    smax.bwd(loss.input_dvals, true_classes=cor_outputs)
+    print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
+                      f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
+    
+    final_dense_layer: LayerDense = network.layers[-2] # type: ignore
+    final_dense_layer.bwd(smax.input_dvals)
+    print(debug_style(f'Dense outputs [Neuron 1]:\n{final_dense_layer.outputs[:, 0]}\n'
+                      f'Weight dvals [Neuron 1]:\n{final_dense_layer.weight_dvals[0]}\n'
+                      f'Input dvals:\n{final_dense_layer.input_dvals}\n'
+                      f'Bias dvals:\n{final_dense_layer.bias_dvals}'))
+    
+    final_relu: ReLU = network.layers[-3] # type: ignore
+    final_relu.bwd(final_dense_layer.input_dvals)
+    print(debug_style(f'ReLU dvals ({final_relu.input_dvals.shape}):\n{final_relu.input_dvals}'))
+
+
 def main() -> None:
 
     n_inputs = 784
     n_neurons = 64
     n_batches = 2
+    learning_rate = 0.2
+    epochs = 3000
 
     layers = [
         LayerDense(n_neurons, n_inputs),
@@ -64,46 +87,29 @@ def main() -> None:
 
     network = NetworkDense(layers=layers)
 
-    test_data = gen_test_data(n_batches=n_batches, n_inputs=n_inputs)
-
-    network.fwd(test_data)
-
-    print(debug_style(f'Network pred_classes {network.pred_classes.shape}:\n'
-                      f'{network.pred_classes}'))
-    
-
     cor_outputs = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]])    
+
+    test_data = gen_test_data(n_batches=n_batches, n_inputs=n_inputs)
     
-    # print(cor_outputs.shape, network.pred_classes.shape)
-    # print(np.sum(cor_outputs * network.pred_classes, axis=1))
+    for _ in range(epochs):
 
-    loss = CategoricalCrossEntropy()
-    loss.calculate(network.pred_classes, cor_outputs)
-    print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}")
+        network.fwd(test_data)
 
-    loss.bwd()
-    print(debug_style(f'[Loss Derivative] {loss.input_dvals}'))
+        print(debug_style(f'Network pred_classes {network.pred_classes.shape}:\n'
+                        f'{network.pred_classes}'))
 
-    # smax: Softmax = network.layers[-1] # type: ignore
-    # smax.bwd(loss.input_dvals, true_classes=cor_outputs)
-    # print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
-    #                   f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
-    
-    # final_dense_layer: LayerDense = network.layers[-2] # type: ignore
-    # final_dense_layer.bwd(smax.input_dvals)
-    # print(debug_style(f'Dense outputs [Neuron 1]:\n{final_dense_layer.outputs[:, 0]}\n'
-    #                   f'Weight dvals [Neuron 1]:\n{final_dense_layer.weight_dvals[0]}\n'
-    #                   f'Input dvals:\n{final_dense_layer.input_dvals}\n'
-    #                   f'Bias dvals:\n{final_dense_layer.bias_dvals}'))
-    
-    # final_relu: ReLU = network.layers[-3] # type: ignore
-    # final_relu.bwd(final_dense_layer.input_dvals)
-    # print(debug_style(f'ReLU dvals ({final_relu.input_dvals.shape}):\n{final_relu.input_dvals}'))
+        loss = CategoricalCrossEntropy()
+        loss.calculate(network.pred_classes, cor_outputs)
+        print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}")
 
-    network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
+        loss.bwd()
+        print(debug_style(f'[Loss Derivative] {loss.input_dvals}'))
 
+        network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
 
+        sgd = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+        sgd.update_params()
 
 
 if __name__ == '__main__':

@@ -1,14 +1,12 @@
 '''
 Collection of Loss functions
 Created: Sprint 2
-Last modified: Sprint 2
+Last modified: Sprint 3
 '''
 
 import numpy as np
 
 from neural.core.base import Loss
-from tools.debugging.styling import debug_style
-
 
 class CategoricalCrossEntropy(Loss):
     '''
@@ -56,8 +54,3 @@ class CategoricalCrossEntropy(Loss):
 
         # Do -1 / sj, skipping div 0 and replacing with 0
         self.input_dvals = np.divide(neg_ones, cor_pred_arr, out=zeros, where=cor_pred_arr!=0)
-        
-
-
-        # self.input_dval = np.sum(local_input_dvals) / self.batch_size
-

@@ -7,7 +7,7 @@ Purpose: Create and propogate neural network
 
 # Built-in imports
 import time
-from typing import Dict, Union, Tuple, Sequence
+from typing import cast, Sequence
 
 # External imports
 import numpy as np
@@ -15,15 +15,15 @@ import numpy as np
 # Local imports
 # from .base_classes import LayerGeneric
 from neural.layers import LayerDense
-from neural.core.base import Activation
+from neural.core.base import Activation, Network, Layer
 from neural.layers.activations import *
 
 from tools.debugging import debug_style, warning_style
 
 
-class NetworkDense:
+class NetworkDense(Network):
 
-    def __init__(self, layers: list[Activation | LayerDense]) -> None:
+    def __init__(self, layers: list) -> None:
         '''
         Initialise a neural network using the specified architecture.
 
@@ -35,12 +35,19 @@ class NetworkDense:
         '''
 
         self.layers = layers # Both dense & activation layers
-        
+
+        # Enforce correct typing so the linter doesn't get mad
+        self.layers[::2] = cast(Sequence[LayerDense], self.layers[::2])
+        self.layers[1::2] = cast(Sequence[Activation], self.layers[1::2])
+
+        for layer in self.layers:
+            print(f'{layer.__class__.__name__}: {type(layer)}')
+
         # List of layer names (don't know how necessary)
         self.layer_arch: list[str] = []
         for i, arch in enumerate(self.layers):
             if i % 2 == 0: # Indexes of dense layers [0, 2, 4]
-                self.layer_arch.append(f'LayerDense{arch.n_neurons, arch.n_inputs}') # pyright: ignore[reportAttributeAccessIssue]
+                self.layer_arch.append(f'LayerDense{arch.n_neurons, arch.n_inputs}')
             else:
                 self.layer_arch.append(f'{arch.__class__.__name__}()')
 
