@@ -70,18 +70,36 @@ class NetworkDense:
             
             # print(debug_style(f'[NetworkDense.fwd()] Current Layer Index: {layer_ind+1}'))
 
-            prev_layer = self.layers[layer_ind] # Uses index of new sliced list
-            layer.fwd(prev_layer.outputs)
+            fwd_layer = self.layers[layer_ind] # Uses index of new sliced list
+            layer.fwd(fwd_layer.outputs)
 
             print(debug_style(f'[NetworkDense.fwd()] [{layer.__class__.__name__}] {layer.outputs.shape}'))
 
         # Update network confidence scores
         self.pred_classes = self.layers[-1].outputs
 
-    def bwd(self, loss_dvals: np.ndarray) -> None:
+    def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray) -> None:
+        '''
+        Backpropgate through layers, from Softmax to first layer.
         
-        for layer in self.layers:
-            pass
+        :param: loss_dvals -- Derivative of loss function w.r.t inputs.
+        :param: true_classes -- One-hot-encoded vector of correct outputs.
+        '''
+        
+        # Backpropogate through Softmax separately
+        print(debug_style(f'Backprop: Loss -> Softmax'))
+        output_activ = self.layers[-1]
+        output_activ.bwd(chain_dvals=loss_dvals, true_classes=true_classes) # pyright: ignore[reportCallIssue]
+
+        # Number of non-Softmax layers
+        n_reg_layers = len(self.layers[:-1])
+
+        # Iterate through layers backwards, from final LayerDense to first LayerDense
+        for i, layer in enumerate(self.layers[-2::-1]):
+            
+            fwd_layer = self.layers[n_reg_layers-i]
+            print(debug_style(f'Backprop: {fwd_layer.__class__.__name__} -> {layer.__class__.__name__}'))
+            layer.bwd(fwd_layer.input_dvals)  
 
 
 

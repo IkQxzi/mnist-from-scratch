@@ -69,7 +69,7 @@ class Activation():
         Attributes:
             input_dvals -- The derivatives of the output w.r.t inputs.
         '''
-
+        self.input_dvals: np.ndarray
         pass
 
 

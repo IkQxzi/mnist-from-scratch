@@ -25,9 +25,13 @@ class ReLU(Activation):
     
     def bwd(self, chain_dvals: np.ndarray) -> None:
         
-        local_input_dvals = self.outputs
+        # Derivative is 1 if inputs >= 0, 0 otherwise
+        local_input_dvals = np.divide(self.inputs, self.inputs, 
+                                      out=np.zeros_like(self.inputs),
+                                      where=self.inputs!=0)
 
-        self.input_dvals = np.dot(local_input_dvals, chain_dvals.T)
+        # Chain rule, element-wise as they are the same shape
+        self.input_dvals = chain_dvals * local_input_dvals
 
 
 class Sigmoid(Activation):

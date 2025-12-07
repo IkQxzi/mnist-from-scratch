@@ -60,14 +60,13 @@ class LayerDense():
 
         # derivative of weights = inputs
         local_weight_dvals = self.inputs
-        self.weight_dvals = np.dot(local_weight_dvals, chain_dvals.T)
+        self.weight_dvals = np.dot(chain_dvals.T, local_weight_dvals)
 
         # derivative of inputs = weights
         local_input_dvals = self.weights
-        self.input_dvals = np.dot(local_input_dvals, chain_dvals.T)
+        self.input_dvals = np.dot(chain_dvals, local_input_dvals)
 
-        # derivative of biases = 1 
-        local_bias_dvals = np.ones_like(self.biases)
-        self.bias_dvals = np.dot(local_bias_dvals, chain_dvals.T)
+        # derivative of biases = 1; calculate batch average
+        self.bias_dvals = np.average(chain_dvals, axis=0)
 
 

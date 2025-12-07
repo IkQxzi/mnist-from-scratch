@@ -85,10 +85,24 @@ def main() -> None:
     loss.bwd()
     print(debug_style(f'[Loss Derivative] {loss.input_dvals}'))
 
-    smax: Softmax = network.layers[-1] # type: ignore
-    smax.bwd(loss.input_dvals, true_classes=cor_outputs)
-    print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
-                      f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
+    # smax: Softmax = network.layers[-1] # type: ignore
+    # smax.bwd(loss.input_dvals, true_classes=cor_outputs)
+    # print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
+    #                   f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
+    
+    # final_dense_layer: LayerDense = network.layers[-2] # type: ignore
+    # final_dense_layer.bwd(smax.input_dvals)
+    # print(debug_style(f'Dense outputs [Neuron 1]:\n{final_dense_layer.outputs[:, 0]}\n'
+    #                   f'Weight dvals [Neuron 1]:\n{final_dense_layer.weight_dvals[0]}\n'
+    #                   f'Input dvals:\n{final_dense_layer.input_dvals}\n'
+    #                   f'Bias dvals:\n{final_dense_layer.bias_dvals}'))
+    
+    # final_relu: ReLU = network.layers[-3] # type: ignore
+    # final_relu.bwd(final_dense_layer.input_dvals)
+    # print(debug_style(f'ReLU dvals ({final_relu.input_dvals.shape}):\n{final_relu.input_dvals}'))
+
+    network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
+
 
 
 
