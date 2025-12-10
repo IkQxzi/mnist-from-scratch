@@ -5,9 +5,11 @@ Last Modified: Sprint 2
 '''
 
 import numpy as np
+from keras.datasets import mnist
 
 from neural import NetworkDense
 from neural.tests import NetworkDenseExample, gen_batch_data, gen_test_one_hot
+from neural import get_mnist_data
 from neural.tests.data import gen_test_data
 from tools.debugging import debug_style
 
@@ -70,11 +72,14 @@ def manual_bwd(network: NetworkDense, loss: CategoricalCrossEntropy, cor_outputs
 
 def main() -> None:
 
+    # For readability
+    np.set_printoptions(suppress=True, precision=2)
+
     n_inputs = 784
     n_neurons = 64
     n_batches = 2
     learning_rate = 0.2
-    epochs = 3000
+    epochs = 1000
 
     layers = [
         LayerDense(n_neurons, n_inputs),
@@ -87,8 +92,8 @@ def main() -> None:
 
     network = NetworkDense(layers=layers)
 
-    cor_outputs = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]])    
+    cor_outputs = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])    
 
     test_data = gen_test_data(n_batches=n_batches, n_inputs=n_inputs)
     
@@ -97,7 +102,8 @@ def main() -> None:
         network.fwd(test_data)
 
         print(debug_style(f'Network pred_classes {network.pred_classes.shape}:\n'
-                        f'{network.pred_classes}'))
+                        f'{network.pred_classes}\n'
+                        f'Confidence scores\n{network.conf_scores}'))
 
         loss = CategoricalCrossEntropy()
         loss.calculate(network.pred_classes, cor_outputs)

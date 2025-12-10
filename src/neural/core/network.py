@@ -53,7 +53,9 @@ class NetworkDense(Network):
 
         print(debug_style(f'Layer arch: {self.layer_arch}'))
 
-        self.pred_classes = np.array([], dtype=float) # Will be updated after forwarding
+        # Will be updated after forwarding
+        self.pred_classes = np.array([], dtype=float) 
+        self.conf_scores = np.array([], dtype=float)
 
     
     def fwd(self, inputs: np.ndarray):
@@ -82,8 +84,18 @@ class NetworkDense(Network):
 
             print(debug_style(f'[NetworkDense.fwd()] [{layer.__class__.__name__}] {layer.outputs.shape}'))
 
-        # Update network confidence scores
+        # Update network outputs
         self.pred_classes = self.layers[-1].outputs
+
+        # Calculate confidence scores
+        output_sum = np.sum(self.pred_classes, axis=1) # Sum of each sample
+        self.conf_scores = np.ones_like(self.pred_classes)
+        for i in range(output_sum.shape[0]):
+            self.conf_scores[i] = (self.pred_classes[i] / output_sum[i])
+
+        self.conf_scores *= 100 # dec to %
+        self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+
 
     def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray) -> None:
         '''
