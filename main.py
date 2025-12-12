@@ -9,7 +9,7 @@ from keras.datasets import mnist
 
 from neural import NetworkDense
 from neural.tests import NetworkDenseExample, gen_batch_data, gen_test_one_hot
-from neural import get_mnist_data
+from neural import get_mnist_batches
 from neural.tests.data import gen_test_data
 from tools.debugging import debug_style
 
@@ -70,7 +70,7 @@ def manual_bwd(network: NetworkDense, loss: CategoricalCrossEntropy, cor_outputs
     print(debug_style(f'ReLU dvals ({final_relu.input_dvals.shape}):\n{final_relu.input_dvals}'))
 
 
-def main() -> None:
+def toy_test() -> None:
 
     # For readability
     np.set_printoptions(suppress=True, precision=2)
@@ -93,7 +93,7 @@ def main() -> None:
     network = NetworkDense(layers=layers)
 
     cor_outputs = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])    
+                            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
 
     test_data = gen_test_data(n_batches=n_batches, n_inputs=n_inputs)
     
@@ -116,6 +116,51 @@ def main() -> None:
 
         sgd = StochasticGradientDescent(learning_rate=learning_rate, network=network)
         sgd.update_params()
+
+
+def main() -> None:
+    
+    # For readability
+    np.set_printoptions(suppress=True, precision=2)
+
+    n_inputs = 784
+    n_neurons = 64
+    batch_size = 32
+    learning_rate = 0.2
+    epochs = 1000
+
+    layers = [
+        LayerDense(n_neurons, n_inputs),
+        ReLU(),
+        LayerDense(16, n_inputs=n_neurons),
+        ReLU(),
+        LayerDense(10, 16),
+        Softmax()
+    ]
+
+    network = NetworkDense(layers=layers)
+    loss = CategoricalCrossEntropy()
+    optimiser = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+
+    (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size=batch_size)
+
+    for epoch in range(epochs):
+        i = epoch
+
+        network.fwd(x_train_batches[i])
+        
+        loss.calculate(pred_classes=network.pred_classes, true_classes=y_train_batches[i])
+        print(debug_style(f'pred_classes:\n {network.pred_classes}'))
+        print(debug_style(f'Loss:\n {loss.outputs}'))
+        loss.bwd()
+        
+        network.bwd(loss_dvals=loss.input_dvals, true_classes=y_train_batches[i])
+
+        # print(debug_style(f'{network.conf_scores}'))
+        input('...')
+
+        optimiser.update_params()
+
 
 
 if __name__ == '__main__':
