@@ -30,6 +30,6 @@ class StochasticGradientDescent(Optimiser):
         # Only update Dense layers
         for layer in self.network.layers[::2]:
         
-            layer.weights -= layer.weight_dvals * self.l_rate
-            layer.biases -= layer.bias_dvals * self.l_rate
+            layer.weights -= (layer.weight_dvals * self.l_rate)
+            layer.biases -= (layer.bias_dvals * self.l_rate)
 

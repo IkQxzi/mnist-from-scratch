@@ -47,6 +47,12 @@ def get_mnist_batches(batch_size: int):
     x_batch_shape = (int(x_train.shape[0]/batch_size), batch_size, 784)
     x_train_batches = np.reshape(x_train, x_batch_shape)
 
+    # Currently uint8, needs to be float
+    x_train_batches = x_train_batches.astype(dtype='float64')
+    x_train_batches /= 255 # Standardise pixel values (0-255) -> (0-1)
+
+    assert np.all(x_train_batches < 1), "Pixel values not standardised correctly."
+
     # Use np.reshape() instead of np.split() to get 2D arr instead of list[arrs]
     y_batch_shape = (int(y_train.shape[0]/batch_size), batch_size, 10)
     y_train_batches = np.reshape(y_train, shape=y_batch_shape)
@@ -54,8 +60,12 @@ def get_mnist_batches(batch_size: int):
     return (x_train_batches, y_train_batches), (x_test, y_test)
 
 
-(x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(32)
+def batch_test() -> None:
+    (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(32)
 
-print(f'x_train_batches shape: {x_train_batches.shape}')
-print(f'y_train_batches shape: {y_train_batches.shape}')
-print(f'x_train_batches:\n {x_train_batches[0, 0, :]}')
+    print(f'x_train_batches shape: {x_train_batches.shape}')
+    print(f'y_train_batches shape: {y_train_batches.shape}')
+    print(f'x_train_batches:\n {x_train_batches[0, 0, :28]}')
+    print(f'y_train_batches:\n {y_train_batches[0, :5]}')
+
+batch_test()

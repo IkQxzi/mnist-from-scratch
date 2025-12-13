@@ -121,9 +121,9 @@ def toy_test() -> None:
 def main() -> None:
     
     # For readability
-    np.set_printoptions(suppress=True, precision=2)
+    np.set_printoptions(suppress=True, precision=3)
 
-    n_inputs = 784
+    n_inputs = 3
     n_neurons = 64
     batch_size = 32
     learning_rate = 0.2
@@ -134,32 +134,48 @@ def main() -> None:
         ReLU(),
         LayerDense(16, n_inputs=n_neurons),
         ReLU(),
-        LayerDense(10, 16),
+        LayerDense(3, 16),
         Softmax()
     ]
 
     network = NetworkDense(layers=layers)
     loss = CategoricalCrossEntropy()
-    optimiser = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+    optimiser = StochasticGradientDescent(learning_rate=0.01, network=network)
 
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size=batch_size)
+
+    dummy_input = np.array([
+        [ 2.0, -1.0, -1.0],  # Strong feature 0 -> Should be Class 0
+        [-1.0,  2.0, -1.0],  # Strong feature 1 -> Should be Class 1
+        [-1.0, -1.0,  2.0]   # Strong feature 2 -> Should be Class 2
+    ])
+
+    y_true = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
 
     for epoch in range(epochs):
         i = epoch
 
-        network.fwd(x_train_batches[i])
+        network.fwd(dummy_input)
         
-        loss.calculate(pred_classes=network.pred_classes, true_classes=y_train_batches[i])
+        loss.calculate(pred_classes=network.pred_classes, true_classes=y_true)
         print(debug_style(f'pred_classes:\n {network.pred_classes}'))
         print(debug_style(f'Loss:\n {loss.outputs}'))
         loss.bwd()
         
-        network.bwd(loss_dvals=loss.input_dvals, true_classes=y_train_batches[i])
+        network.bwd(loss_dvals=loss.input_dvals, true_classes=y_true)
 
         # print(debug_style(f'{network.conf_scores}'))
-        input('...')
+        if np.any(network.pred_classes >= 0.99):
+            print(f'It took {epoch} epochs to become at least 99% accurate.')
+            exit()
 
         optimiser.update_params()
+
+
 
 
 

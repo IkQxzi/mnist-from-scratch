@@ -57,7 +57,19 @@ class NetworkDense(Network):
         self.pred_classes = np.array([], dtype=float) 
         self.conf_scores = np.array([], dtype=float)
 
-    
+
+    def calc_conf_scores(self) -> None:
+        '''Calculate confidence scores using self.pred_classes.'''
+
+        output_sum = np.sum(self.pred_classes, axis=1) # Sum of each sample
+        self.conf_scores = np.ones_like(self.pred_classes)
+        for i in range(output_sum.shape[0]):
+            self.conf_scores[i] = (self.pred_classes[i] / output_sum[i])
+
+        self.conf_scores *= 100 # dec to %
+        self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+
+
     def fwd(self, inputs: np.ndarray):
         '''
         Forward a set of inputs through the entire network.
@@ -87,14 +99,7 @@ class NetworkDense(Network):
         # Update network outputs
         self.pred_classes = self.layers[-1].outputs
 
-        # Calculate confidence scores
-        output_sum = np.sum(self.pred_classes, axis=1) # Sum of each sample
-        self.conf_scores = np.ones_like(self.pred_classes)
-        for i in range(output_sum.shape[0]):
-            self.conf_scores[i] = (self.pred_classes[i] / output_sum[i])
-
-        self.conf_scores *= 100 # dec to %
-        self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+        # self.calc_conf_scores()
 
 
     def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray) -> None:

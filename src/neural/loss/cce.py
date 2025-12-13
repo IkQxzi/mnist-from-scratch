@@ -28,6 +28,7 @@ class CategoricalCrossEntropy(Loss):
 
         # Perform the element wise product of true_classes and pred_classes
         # to get a list of their products (zeros and then relevant values)
+        pred_classes = np.clip(1e-6, 1, pred_classes)
         rel_list = true_classes * np.log(pred_classes)
         
         # Then sum the 2D array of relevant predictions
