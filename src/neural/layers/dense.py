@@ -24,11 +24,11 @@ class LayerDense(Layer):
         self.n_neurons = n_neurons
         self.n_inputs = n_inputs
 
-        self.weights: np.ndarray = np.random.randn(n_neurons, n_inputs) * 0.01
+        # W ~ N(0,1)
+        self.weights: np.ndarray = np.random.randn(n_neurons, n_inputs)
         
-        # Pseudocode:
-        # Generate random weight distribution
-        # Subtract mean
+        # He initialisation: W ~ N(0, 2/n_inputs)
+        self.weights *= np.sqrt(2/n_inputs) 
 
         self.biases: np.ndarray = np.zeros((1, n_neurons))
 

@@ -104,8 +104,11 @@ class Softmax(Activation):
 
         self.inputs = inputs
 
-        clip_inputs = np.clip(-1e-6, 1e-6, inputs)
-        exp_vals = np.exp(clip_inputs)
+        print(debug_style(f'Inputs to Softmax: {inputs}'))
+
+        # Shifting all inputs by same value has no effect on output distribution
+        max_input = np.max(inputs)
+        exp_vals = np.exp(inputs - max_input)
 
         # axis 0 = batch-wise, axis 1 = neuron-wise
         exp_sum = np.sum(exp_vals, axis=1, keepdims=True) 

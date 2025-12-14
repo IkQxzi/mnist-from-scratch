@@ -121,12 +121,12 @@ def toy_test() -> None:
 def main() -> None:
     
     # For readability
-    np.set_printoptions(suppress=True, precision=3)
+    # np.set_printoptions(suppress=True, precision=3)
 
     n_inputs = 784
     n_neurons = 64
     batch_size = 32
-    learning_rate = 1
+    learning_rate = 0.01
     epochs = 1000
 
     layers = [
@@ -147,22 +147,27 @@ def main() -> None:
         i = epoch
 
         loss = CategoricalCrossEntropy()
+        net_inputs = x_train_batches[i]
+        true_classes = y_train_batches[i]
 
-        network.fwd(x_train_batches[i, 0, :])
-        print(debug_style(f'x_train_batches[i] shape: {x_train_batches[i].shape}\n'
-                          f'y_train_batches[i] shape: {y_train_batches[i].shape}'))
-        print(f'x_train_batches: {x_train_batches[i, 0, :28]}\n'
-              f'y_train_batches: {y_train_batches[i, 0]}')
+        network.fwd(net_inputs)
+
+        print(debug_style(f'x_train_batches[i] shape: {net_inputs.shape}\n'
+                          f'y_train_batches[i] shape: {true_classes.shape}'))
         
-        loss.calculate(pred_classes=network.pred_classes, true_classes=y_train_batches[i, 0, :])
+        print(debug_style(f'x_train_batches: {x_train_batches[i, 0, :28]}\n'
+                          f'y_train_batches: {y_train_batches[i, 0]}'))
+        
         print(debug_style(f'pred_classes:\n {network.pred_classes}'))
+
+        loss.calculate(pred_classes=network.pred_classes, true_classes=true_classes)
         print(debug_style(f'Loss:\n {loss.outputs}'))
+        
         loss.bwd()
         
-        network.bwd(loss_dvals=loss.input_dvals, true_classes=y_train_batches[i, 0, :])
+        network.bwd(loss_dvals=loss.input_dvals, true_classes=true_classes)
 
-        print(debug_style(f'final layer (Softmax) dvals:\n {network.layers[-1].input_dvals}\n'
-                          f'filler'))
+        print(debug_style(f'final layer (Softmax) dvals:\n {network.layers[-1].input_dvals[0]}\n'))
         
         input('...')
         
