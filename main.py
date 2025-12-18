@@ -41,13 +41,13 @@ def test_pass() -> None:
             print(debug_style(f'[{layer_n}][{layer.__class__.__name__}] outputs:\n {layer.outputs}'))
 
         # Print final outputs
-        print(debug_style(f'[FINAL OUTPUTS]:\n{test_net.network.pred_classes}'))
-        print(debug_style(f'[Sum across neurons][axis 1]:\n{np.sum(test_net.network.pred_classes, axis=1)}'))
+        print(debug_style(f'[FINAL OUTPUTS]:\n{test_net.network.probs}'))
+        print(debug_style(f'[Sum across neurons][axis 1]:\n{np.sum(test_net.network.probs, axis=1)}'))
 
         true_classes = gen_test_one_hot(layer_arch=test_net.layer_arch, batch_size=batch_size) # pyright: ignore[reportArgumentType]
 
         loss = CategoricalCrossEntropy()
-        loss.calculate(test_net.network.pred_classes, true_classes)
+        loss.calculate(test_net.network.probs, true_classes)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
 
 
@@ -101,12 +101,12 @@ def toy_test() -> None:
 
         network.fwd(test_data)
 
-        print(debug_style(f'Network pred_classes {network.pred_classes.shape}:\n'
-                        f'{network.pred_classes}\n'
+        print(debug_style(f'Network probs {network.probs.shape}:\n'
+                        f'{network.probs}\n'
                         f'Confidence scores\n{network.conf_scores}'))
 
         loss = CategoricalCrossEntropy()
-        loss.calculate(network.pred_classes, cor_outputs)
+        loss.calculate(network.probs, cor_outputs)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}")
 
         loss.bwd()
@@ -160,9 +160,9 @@ def batch_train() -> float:
         # print(debug_style(f'x_train_batches: {x_train_batches[i, 0, :28]}\n'
         #                   f'y_train_batches: {y_train_batches[i, 0]}'))
         
-        # print(debug_style(f'pred_classes:\n {network.pred_classes}'))
+        # print(debug_style(f'probs:\n {network.probs}'))
 
-        loss.calculate(pred_classes=network.pred_classes, true_classes=true_classes)
+        loss.calculate(probs=network.probs, true_classes=true_classes)
         # print(debug_style(f'Loss:\n {loss.outputs}'))
         
         loss.bwd()
@@ -184,13 +184,13 @@ def batch_train() -> float:
     for i in range(x_test.shape[0]):
         
         network.fwd(x_test[i])
-        loss.calculate(pred_classes=network.pred_classes, true_classes=y_test[i])
+        loss.calculate(probs=network.probs, true_classes=y_test[i])
         
         # For monitoring later
         loss_total += np.sum(loss.outputs)
         
         # Add 1 when predictin is correct
-        pred_ind = np.argmax(network.pred_classes)
+        pred_ind = np.argmax(network.probs)
         if y_test[i][pred_ind] == 1:
             pred_total += 1
     
@@ -221,7 +221,7 @@ def main() -> None:
 
         except KeyboardInterrupt:
             print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}')
-            raise KeyboardInterrupt()
+            exit()
 
 
 if __name__ == '__main__':

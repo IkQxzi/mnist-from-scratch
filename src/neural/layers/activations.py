@@ -114,6 +114,15 @@ class Softmax(Activation):
         exp_sum = np.sum(exp_vals, axis=1, keepdims=True) 
 
         self.outputs = exp_vals / exp_sum
+
+        # Print debug info if any neuron dominates the output
+        for i, sample in enumerate(self.outputs):
+            if np.any(sample == 1):
+                print(f'1 detected in Softmax outputs:\n{self.outputs}.\n'
+                      f'exp_sum:{exp_sum[i]}\nexp_vals:{exp_vals[i]}\n'
+                      f'inputs:{inputs[i]}')
+
+                exit()
     
 
     def bwd(self, chain_dvals: np.ndarray, true_classes: np.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]

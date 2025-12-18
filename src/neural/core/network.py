@@ -54,17 +54,17 @@ class NetworkDense(Network):
         # print(debug_style(f'Layer arch: {self.layer_arch}'))
 
         # Will be updated after forwarding
-        self.pred_classes = np.array([], dtype=float) 
+        self.probs = np.array([], dtype=float) 
         self.conf_scores = np.array([], dtype=float)
 
 
     def calc_conf_scores(self) -> None:
-        '''Calculate confidence scores using self.pred_classes.'''
+        '''Calculate confidence scores using self.probs.'''
 
-        output_sum = np.sum(self.pred_classes, axis=1) # Sum of each sample
-        self.conf_scores = np.ones_like(self.pred_classes)
+        output_sum = np.sum(self.probs, axis=1) # Sum of each sample
+        self.conf_scores = np.ones_like(self.probs)
         for i in range(output_sum.shape[0]):
-            self.conf_scores[i] = (self.pred_classes[i] / output_sum[i])
+            self.conf_scores[i] = (self.probs[i] / output_sum[i])
 
         self.conf_scores *= 100 # dec to %
         self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
@@ -97,7 +97,7 @@ class NetworkDense(Network):
             # print(debug_style(f'[NetworkDense.fwd()] [{layer.__class__.__name__}] {layer.outputs.shape}'))
 
         # Update network outputs
-        self.pred_classes = self.layers[-1].outputs
+        self.probs = self.layers[-1].outputs
 
         # self.calc_conf_scores()
 

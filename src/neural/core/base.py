@@ -113,11 +113,11 @@ class Loss():
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
 
-    def calculate(self, pred_classes: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def calculate(self, probs: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
         '''
         Calculates CCE Loss.
 
-        :param pred_classes: The network's prediction after Softmax pass.
+        :param probs: The network's prediction after Softmax pass.
         :param true_classes: The correct classes, one-hot-encoded.
         attributes:
         input_dvals: dvals w.r.t inputs.
