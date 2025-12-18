@@ -118,7 +118,7 @@ def toy_test() -> None:
         sgd.update_params()
 
 
-def main() -> None:
+def batch_train() -> float:
     
     # For readability
     # np.set_printoptions(suppress=True, precision=3)
@@ -126,8 +126,8 @@ def main() -> None:
     n_inputs = 784
     n_neurons = 64
     batch_size = 32
-    learning_rate = 0.01
-    epochs = 1000
+    learning_rate = 0.001
+    epochs = 1875
 
     layers = [
         LayerDense(n_neurons, n_inputs),
@@ -143,48 +143,90 @@ def main() -> None:
 
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size=batch_size)
 
+    loss = CategoricalCrossEntropy()
+
+    print('Training on 60,000 MNIST... [batch size: 32]')
     for epoch in range(epochs):
         i = epoch
 
-        loss = CategoricalCrossEntropy()
         net_inputs = x_train_batches[i]
         true_classes = y_train_batches[i]
 
         network.fwd(net_inputs)
 
-        print(debug_style(f'x_train_batches[i] shape: {net_inputs.shape}\n'
-                          f'y_train_batches[i] shape: {true_classes.shape}'))
+        # print(debug_style(f'x_train_batches[i] shape: {net_inputs.shape}\n'
+        #                   f'y_train_batches[i] shape: {true_classes.shape}'))
         
-        print(debug_style(f'x_train_batches: {x_train_batches[i, 0, :28]}\n'
-                          f'y_train_batches: {y_train_batches[i, 0]}'))
+        # print(debug_style(f'x_train_batches: {x_train_batches[i, 0, :28]}\n'
+        #                   f'y_train_batches: {y_train_batches[i, 0]}'))
         
-        print(debug_style(f'pred_classes:\n {network.pred_classes}'))
+        # print(debug_style(f'pred_classes:\n {network.pred_classes}'))
 
         loss.calculate(pred_classes=network.pred_classes, true_classes=true_classes)
-        print(debug_style(f'Loss:\n {loss.outputs}'))
+        # print(debug_style(f'Loss:\n {loss.outputs}'))
         
         loss.bwd()
         
         network.bwd(loss_dvals=loss.input_dvals, true_classes=true_classes)
 
-        print(debug_style(f'final layer (Softmax) dvals:\n {network.layers[-1].input_dvals[0]}\n'))
+        # print(debug_style(f'final layer (Softmax) dvals:\n {network.layers[-1].input_dvals[0]}\n'))
         
-        input('...')
+        # input('...')
         
-        # Update Dense layer params manually
-        for layer in network.layers[::2]:
-            layer.weights = layer.weights - (layer.weight_dvals * learning_rate)
-            layer.biases = layer.biases - (layer.bias_dvals * learning_rate)
+        optimiser = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+        optimiser.update_params()
 
-        # optimiser = StochasticGradientDescent(learning_rate=learning_rate, network=network)
         # optimiser.update_params()
 
+    # test pass
+    loss_total = 0
+    pred_total = 0
+    for i in range(x_test.shape[0]):
+        
+        network.fwd(x_test[i])
+        loss.calculate(pred_classes=network.pred_classes, true_classes=y_test[i])
+        
+        # For monitoring later
+        loss_total += np.sum(loss.outputs)
+        
+        # Add 1 when predictin is correct
+        pred_ind = np.argmax(network.pred_classes)
+        if y_test[i][pred_ind] == 1:
+            pred_total += 1
+    
+    avg_accuracy = 100 * (pred_total / 10_000)
+    print(f'Average loss on test set: {loss_total/10000}')
+    print(f'Average accuracy on test set: {avg_accuracy}')
+
+    return avg_accuracy
 
 
+def main() -> None:
+    
+    runs = 0
+    acc_current = 0
+    acc_total = 0
+    fails = 0
+
+    while True:
+        try:
+            runs += 1
+            acc_current = batch_train()
+            acc_total += acc_current
+            
+            if acc_current < 10:
+                fails +=1
+                acc_total -= acc_current
+                runs -= 1
+
+        except KeyboardInterrupt:
+            print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}')
+            raise KeyboardInterrupt()
 
 
 if __name__ == '__main__':
     main()
+            
 
 # main.py
 

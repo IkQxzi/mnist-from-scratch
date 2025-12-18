@@ -29,7 +29,7 @@ class CategoricalCrossEntropy(Loss):
         # Perform the element wise product of true_classes and pred_classes
         # to get a list of their products (zeros and then relevant values)
         pred_classes = np.clip(pred_classes, 1e-6, 1)
-        print(f'clipped pred_classes: {pred_classes}')
+        # print(f'clipped pred_classes: {pred_classes}')
         rel_list = true_classes * np.log(pred_classes)
         
         # Then sum the 2D array of relevant predictions
@@ -47,10 +47,10 @@ class CategoricalCrossEntropy(Loss):
         :param self: Description
         '''
         
-        # - 1 / sj
+        # Get only sj and zeros otherwise
         cor_pred_arr = self.true_classes * self.pred_classes
 
-        # dvals = -1 / sj
+        # Will be useful to do -1 / sj, and result 0 where sj = 0 
         neg_ones = -1 * np.ones_like(cor_pred_arr)
         zeros = np.zeros_like(cor_pred_arr)
 

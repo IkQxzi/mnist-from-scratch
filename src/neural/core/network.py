@@ -40,8 +40,8 @@ class NetworkDense(Network):
         self.layers[::2] = cast(Sequence[LayerDense], self.layers[::2])
         self.layers[1::2] = cast(Sequence[Activation], self.layers[1::2])
 
-        for layer in self.layers:
-            print(f'{layer.__class__.__name__}: {type(layer)}')
+        # for layer in self.layers:
+            # print(f'{layer.__class__.__name__}: {type(layer)}')
 
         # List of layer names (don't know how necessary)
         self.layer_arch: list[str] = []
@@ -51,7 +51,7 @@ class NetworkDense(Network):
             else:
                 self.layer_arch.append(f'{arch.__class__.__name__}()')
 
-        print(debug_style(f'Layer arch: {self.layer_arch}'))
+        # print(debug_style(f'Layer arch: {self.layer_arch}'))
 
         # Will be updated after forwarding
         self.pred_classes = np.array([], dtype=float) 
@@ -83,7 +83,7 @@ class NetworkDense(Network):
         # print(debug_style(f'[NetworkDense.fwd()] Current Layer Index: 0'))
         layer1 = self.layers[0]
         layer1.fwd(inputs)
-        print(debug_style(f'[NetworkDense.fwd()] [{layer1.__class__.__name__}] {layer1.outputs.shape}'))
+        # print(debug_style(f'[NetworkDense.fwd()] [{layer1.__class__.__name__}] {layer1.outputs.shape}'))
 
         # For each subsequent layer, forward the outputs of the previous layer as its inputs
         for layer_ind, layer in enumerate(self.layers[1:]):
@@ -94,7 +94,7 @@ class NetworkDense(Network):
             fwd_layer = self.layers[layer_ind] # Uses index of new sliced list
             layer.fwd(fwd_layer.outputs)
 
-            print(debug_style(f'[NetworkDense.fwd()] [{layer.__class__.__name__}] {layer.outputs.shape}'))
+            # print(debug_style(f'[NetworkDense.fwd()] [{layer.__class__.__name__}] {layer.outputs.shape}'))
 
         # Update network outputs
         self.pred_classes = self.layers[-1].outputs
@@ -111,7 +111,7 @@ class NetworkDense(Network):
         '''
         
         # Backpropogate through Softmax separately
-        print(debug_style(f'Backprop: Loss -> Softmax'))
+        # print(debug_style(f'Backprop: Loss -> Softmax'))
         output_activ = self.layers[-1]
         output_activ.bwd(chain_dvals=loss_dvals, true_classes=true_classes) # pyright: ignore[reportCallIssue]
 
@@ -122,7 +122,7 @@ class NetworkDense(Network):
         for i, layer in enumerate(self.layers[-2::-1]):
             
             fwd_layer = self.layers[n_reg_layers-i]
-            print(debug_style(f'Backprop: {fwd_layer.__class__.__name__} -> {layer.__class__.__name__}'))
+            # print(debug_style(f'Backprop: {fwd_layer.__class__.__name__} -> {layer.__class__.__name__}'))
             layer.bwd(fwd_layer.input_dvals)  
 
 
