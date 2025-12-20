@@ -79,6 +79,7 @@ def toy_test() -> None:
     n_neurons = 64
     n_batches = 2
     learning_rate = 0.2
+    weight_decay = 0.1
     epochs = 1000
 
     layers = [
@@ -114,7 +115,7 @@ def toy_test() -> None:
 
         network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
 
-        sgd = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+        sgd = StochasticGradientDescent(learning_rate=learning_rate, network=network, weight_decay=weight_decay)
         sgd.update_params()
 
 
@@ -126,7 +127,8 @@ def batch_train() -> float:
     n_inputs = 784
     n_neurons = 64
     batch_size = 32
-    learning_rate = 0.001
+    learning_rate = 0.01
+    weight_decay = 1e-4
     epochs = 1875
 
     layers = [
@@ -173,7 +175,8 @@ def batch_train() -> float:
         
         # input('...')
         
-        optimiser = StochasticGradientDescent(learning_rate=learning_rate, network=network)
+        optimiser = StochasticGradientDescent(learning_rate=learning_rate, 
+                                              network=network, weight_decay=weight_decay)
         optimiser.update_params()
 
         # optimiser.update_params()

@@ -14,15 +14,17 @@ from neural.core.network import NetworkDense
 
 class StochasticGradientDescent(Optimiser):
 
-    def __init__(self, network: NetworkDense, learning_rate: float) -> None:
+    def __init__(self, network: NetworkDense, learning_rate: float, weight_decay: float) -> None:
         '''
         Define learning rate.
         
         :param: learning_rate -- The fraction of the gradient to update the network's parameters by.
+        :param: weight_decay -- The factor by which to consider the squared weights for L2 regularisation.
         '''
         
         self.network = network
         self.l_rate = learning_rate
+        self.w_decay = weight_decay
 
 
     def update_params(self) -> None:
@@ -30,6 +32,15 @@ class StochasticGradientDescent(Optimiser):
         # Only update Dense layers
         for layer in self.network.layers[::2]:
         
-            layer.weights -= (layer.weight_dvals * self.l_rate)
+            # Gradient of total loss w.r.t weights due to CCE Loss
+            w_cce_grad = layer.weight_dvals * self.l_rate
+
+            # Gradient of total loss w.r.t weights due to weight decay factor
+            w_reg_grad = -1 * (layer.weights * (1 - 2 * self.l_rate * self.w_decay))
+
+            # Update using L2 Regularisation
+            layer.weights -= (w_cce_grad + w_reg_grad)
+
+            # L2 has no effect on biases
             layer.biases -= (layer.bias_dvals * self.l_rate)
 

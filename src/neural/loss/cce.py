@@ -56,7 +56,7 @@ class CategoricalCrossEntropy(Loss):
 
         
         # Change warnings to exceptions, only for div & overflow
-        np.seterr(divide='raise', over='raise')
+        # np.seterr(divide='raise', over='raise')
 
         try:
             # Do -1 / sj, skipping div 0 and replacing with 0
