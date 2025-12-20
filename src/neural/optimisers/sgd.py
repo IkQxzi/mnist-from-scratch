@@ -35,11 +35,11 @@ class StochasticGradientDescent(Optimiser):
             # Gradient of total loss w.r.t weights due to CCE Loss
             w_cce_grad = layer.weight_dvals * self.l_rate
 
-            # Gradient of total loss w.r.t weights due to weight decay factor
-            w_reg_grad = -1 * (layer.weights * (1 - 2 * self.l_rate * self.w_decay))
+            # Weights decayed due to learning rate and decay rate
+            w_decayed = layer.weights * (1 - 2 * self.l_rate * self.w_decay)
 
             # Update using L2 Regularisation
-            layer.weights -= (w_cce_grad + w_reg_grad)
+            layer.weights = w_decayed - w_cce_grad
 
             # L2 has no effect on biases
             layer.biases -= (layer.bias_dvals * self.l_rate)

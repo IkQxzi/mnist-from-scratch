@@ -9,7 +9,7 @@ from keras.datasets import mnist
 
 from neural import NetworkDense
 from neural.tests import NetworkDenseExample, gen_batch_data, gen_test_one_hot
-from neural import get_mnist_batches
+from neural import get_mnist_batches, get_mnist_data
 from neural.tests.data import gen_test_data
 from tools.debugging import debug_style
 
@@ -119,7 +119,7 @@ def toy_test() -> None:
         sgd.update_params()
 
 
-def batch_train() -> float:
+def net_train_test() -> float:
     
     # For readability
     # np.set_printoptions(suppress=True, precision=3)
@@ -127,8 +127,8 @@ def batch_train() -> float:
     n_inputs = 784
     n_neurons = 64
     batch_size = 32
-    learning_rate = 0.01
-    weight_decay = 1e-4
+    learning_rate = 0.001
+    weight_decay = 0.1 # Halfed because not using traditional L2
     epochs = 1875
 
     layers = [
@@ -146,6 +146,8 @@ def batch_train() -> float:
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size=batch_size)
 
     loss = CategoricalCrossEntropy()
+    optimiser = StochasticGradientDescent(learning_rate=learning_rate, 
+                                            network=network, weight_decay=weight_decay)
 
     print('Training on 60,000 MNIST... [batch size: 32]')
     for epoch in range(epochs):
@@ -175,11 +177,23 @@ def batch_train() -> float:
         
         # input('...')
         
-        optimiser = StochasticGradientDescent(learning_rate=learning_rate, 
-                                              network=network, weight_decay=weight_decay)
         optimiser.update_params()
 
+        # input('...')
+    
+
+    (new_x_train, new_y_train), (new_x_test, new_y_test) = get_mnist_data()
+
+    avg_acc = net_test(network, x_test=x_test, y_test=y_test)
+
+    return avg_acc
+
         # optimiser.update_params()
+
+
+def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> float:
+
+    loss = CategoricalCrossEntropy()
 
     # test pass
     loss_total = 0
@@ -192,13 +206,13 @@ def batch_train() -> float:
         # For monitoring later
         loss_total += np.sum(loss.outputs)
         
-        # Add 1 when predictin is correct
+        # Add 1 when prediction is correct
         pred_ind = np.argmax(network.probs)
         if y_test[i][pred_ind] == 1:
             pred_total += 1
     
-    avg_accuracy = 100 * (pred_total / 10_000)
-    print(f'Average loss on test set: {loss_total/10000}')
+    avg_accuracy = 100 * (pred_total / x_test.shape[0])
+    print(f'Average loss on test set: {loss_total/x_test.shape[0]}')
     print(f'Average accuracy on test set: {avg_accuracy}')
 
     return avg_accuracy
@@ -214,7 +228,7 @@ def main() -> None:
     while True:
         try:
             runs += 1
-            acc_current = batch_train()
+            acc_current = net_train_test()
             acc_total += acc_current
             
             if acc_current < 10:
@@ -226,6 +240,21 @@ def main() -> None:
             print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}')
             exit()
 
+
+# def main() -> None:
+    # softmax_test()
+
+def softmax_test():
+    smax = Softmax()
+
+    inputs = np.array([[ 19.56129821, -32.53570809, -30.15035223, 101.03722652,  31.35531259,
+   6.68513487, -68.16097319,  54.38668008, -73.05622014,   2.29131153]])
+
+    print(f'abs_inputs: {abs(inputs)}')
+
+    smax.fwd(abs(inputs))
+
+    print(smax.outputs)
 
 if __name__ == '__main__':
     main()
