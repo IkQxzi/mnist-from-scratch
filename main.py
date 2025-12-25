@@ -4,6 +4,9 @@ Created: Sprint 1
 Last Modified: Sprint 2
 '''
 
+import time
+
+# from jax import jit
 import numpy as np
 from keras.datasets import mnist
 
@@ -11,7 +14,7 @@ from neural import NetworkDense
 from neural.tests import NetworkDenseExample, gen_batch_data, gen_test_one_hot
 from neural import get_mnist_batches, get_mnist_data
 from neural.tests.data import gen_test_data
-from tools.debugging import debug_style
+from tools.debugging import debug_style, warning_style
 
 from neural.layers import LayerDense
 from neural.layers.activations import * 
@@ -122,7 +125,7 @@ def toy_test() -> None:
 def net_train_test() -> float:
     
     # For readability
-    # np.set_printoptions(suppress=True, precision=3)
+    np.set_printoptions(suppress=True, precision=3)
 
     n_inputs = 784
     n_neurons = 64
@@ -179,16 +182,80 @@ def net_train_test() -> float:
         
         optimiser.update_params()
 
+        # print(debug_style(f'probs:\n{network.probs}'))
+
+        # for i, sample in enumerate(network.probs):
+        #     if np.any(sample >= 0.9):
+        #         if np.where(sample >= 0.9) != np.where(true_classes[i] == 1):
+        #             print(warning_style(f'Confidently incorrect guess:\n{sample}\n{true_classes[i]}'))
+        #         print(f'{sample}\n{true_classes[i]}')
+
         # input('...')
+    
+    print(f'Number of one overflows in 60,000 MNIST: {network.layers[-1].one_overflows}')
     
 
     (new_x_train, new_y_train), (new_x_test, new_y_test) = get_mnist_data()
 
-    avg_acc = net_test(network, x_test=x_test, y_test=y_test)
+    network.layers[-1].debug = False
+    print('printer')
+
+    avg_acc = net_test(network, x_test=new_x_train, y_test=new_y_train)
 
     return avg_acc
 
         # optimiser.update_params()
+
+
+def epoch_train_test() -> float:
+
+    # For readability
+    np.set_printoptions(suppress=True, precision=3)
+
+    n_inputs = 784
+    net_neurons = [784, 128, 10]
+    batch_size = 32
+    learning_rate = 0.1
+    weight_decay = 5e-4 # Halfed because not using traditional L2
+    epochs = 20
+
+    layers = [
+        LayerDense(net_neurons[0], n_inputs),
+        ReLU(),
+        LayerDense(net_neurons[1], n_inputs=net_neurons[0]),
+        ReLU(),
+        LayerDense(net_neurons[2], net_neurons[1]),
+        Softmax()
+    ]
+
+    net = NetworkDense(layers)
+    loss = CategoricalCrossEntropy()
+    optimiser = StochasticGradientDescent(net, learning_rate, weight_decay)
+
+    (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size)
+
+    print(f'Training on 60,000 MNIST, {epochs} epochs...')
+
+    # 1 epoch is the entire training set being forwarded
+    for epoch in range(epochs):
+        print(f"[{time.strftime('%H:%M:%S')}] Epoch: {epoch+1}")
+        for x_train, y_train in zip(x_train_batches, y_train_batches):
+            
+            # Fwd pass
+            net.fwd(x_train)
+            loss.calculate(probs=net.probs, true_classes=y_train)
+
+            # Bwd pass
+            loss.bwd()
+            net.bwd(loss_dvals=loss.input_dvals, true_classes=y_train)
+
+            # Optimser update
+            optimiser.update_params()
+        
+
+    avg_acc = net_test(net, x_test, y_test)
+
+    return avg_acc
 
 
 def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> float:
@@ -225,19 +292,33 @@ def main() -> None:
     acc_total = 0
     fails = 0
 
+    singular = True
+
     while True:
+        start_time = time.time()
+        print(f"[{time.strftime('%H:%M:%S')}]")
+
         try:
+
+
             runs += 1
-            acc_current = net_train_test()
+            acc_current = epoch_train_test()
             acc_total += acc_current
             
+
             if acc_current < 10:
                 fails +=1
                 acc_total -= acc_current
                 runs -= 1
 
+            if singular:
+                exit()
+
         except KeyboardInterrupt:
-            print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}')
+            elapsed_time = time.time() - start_time
+            print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}\n'
+                  f'Time taken: {elapsed_time:.1f}')
+            print(f"[{time.strftime('%H:%M:%S')}]")
             exit()
 
 

@@ -96,6 +96,12 @@ class Softmax(Activation):
     Convert raw network outputs into a probability distribution.
     '''
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.one_overflows = 0
+        self.debug = False
+
 
     def fwd(self, inputs: np.ndarray) -> None: # type: ignore 
         '''
@@ -116,15 +122,16 @@ class Softmax(Activation):
         self.outputs = exp_vals / exp_sum
 
         # Print debug info if any neuron dominates the output
-        debug = False
-        if debug:
+        prints = False
+        if self.debug:
             for i, sample in enumerate(self.outputs):
                 if np.any(sample == 1):
-                    print(f'1 detected in Softmax outputs:\n{self.outputs[i]}.\n'
-                        f'exp_sum:{exp_sum[i]}\nexp_vals:{exp_vals[i]}\n'
-                        f'inputs:{inputs[i]}')
+                    if prints:
+                        print(f'1 detected in Softmax outputs:\n{self.outputs[i]}.\n'
+                            f'exp_sum:{exp_sum[i]}\nexp_vals:{exp_vals[i]}\n'
+                            f'inputs:{inputs[i]}')
 
-                    exit()
+                    self.one_overflows += 1
     
 
     def bwd(self, chain_dvals: np.ndarray, true_classes: np.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]

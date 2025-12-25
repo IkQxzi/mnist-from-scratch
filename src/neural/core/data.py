@@ -34,6 +34,12 @@ def get_mnist_data() -> tuple:
     x_train = x_train.reshape(60_000, 784)
     x_test = x_test.reshape(10_000, 784)
 
+    # Standardise data to (0, 1) (currently uint8, (0, 255))
+    x_train = x_train.astype(dtype='float64')
+    x_train *= (1/255)
+    x_test = x_test.astype(dtype='float64')
+    x_test *= (1/255)
+
     return (x_train, y_train), (x_test, y_test)
 
 
@@ -46,10 +52,6 @@ def get_mnist_batches(batch_size: int):
     # np.split() returns list of arrs, not 2D arr, np.stack converts to 2D arr
     x_batch_shape = (int(x_train.shape[0]/batch_size), batch_size, 784)
     x_train_batches = np.reshape(x_train, x_batch_shape)
-
-    # Currently uint8, needs to be float
-    x_train_batches = x_train_batches.astype(dtype='float64')
-    x_train_batches *= (1/255) # Standardise pixel values (0-255) -> (0-1)
 
     if np.any(x_train_batches > 1):
         print('Error.')
