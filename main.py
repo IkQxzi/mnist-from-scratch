@@ -207,7 +207,23 @@ def net_train_test() -> float:
         # optimiser.update_params()
 
 
-def epoch_train_test() -> float:
+def softmax_test():
+    smax = Softmax()
+
+    inputs = np.array([[ 19.56129821, -32.53570809, -30.15035223, 101.03722652,  31.35531259,
+   6.68513487, -68.16097319,  54.38668008, -73.05622014,   2.29131153]])
+
+    print(f'abs_inputs: {abs(inputs)}')
+
+    smax.fwd(abs(inputs))
+
+    print(smax.outputs)
+
+
+
+
+
+def epoch_train_test(learning_rate: float, epochs: int) -> tuple[NetworkDense, float]:
 
     # For readability
     np.set_printoptions(suppress=True, precision=3)
@@ -215,9 +231,9 @@ def epoch_train_test() -> float:
     n_inputs = 784
     net_neurons = [784, 128, 10]
     batch_size = 32
-    learning_rate = 0.1
-    weight_decay = 5e-4 # Halfed because not using traditional L2
-    epochs = 20
+    learning_rate = learning_rate
+    weight_decay = 1e-4 # Halfed because not using traditional L2
+    epochs = epochs
 
     layers = [
         LayerDense(net_neurons[0], n_inputs),
@@ -239,8 +255,12 @@ def epoch_train_test() -> float:
     # 1 epoch is the entire training set being forwarded
     for epoch in range(epochs):
         print(f"[{time.strftime('%H:%M:%S')}] Epoch: {epoch+1}")
+
         for x_train, y_train in zip(x_train_batches, y_train_batches):
             
+            # np.random.shuffle(x_train)
+            # np.random.shuffle(y_train)
+
             # Fwd pass
             net.fwd(x_train)
             loss.calculate(probs=net.probs, true_classes=y_train)
@@ -255,7 +275,7 @@ def epoch_train_test() -> float:
 
     avg_acc = net_test(net, x_test, y_test)
 
-    return avg_acc
+    return net, avg_acc
 
 
 def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> float:
@@ -287,55 +307,52 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 
 def main() -> None:
     
-    runs = 0
-    acc_current = 0
-    acc_total = 0
-    fails = 0
+    l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
+    epochs = 1
 
-    singular = True
+    counter = -1
+    best_acc = 0
 
     while True:
-        start_time = time.time()
-        print(f"[{time.strftime('%H:%M:%S')}]")
+        counter +=1
+        i = counter % 6
 
-        try:
+        l_rate = l_rates[i]
+        net, cur_acc = epoch_train_test(l_rate, epochs=epochs)
+        
+        # Write accuracy and time in file:
+        with open('logs//best_networks.txt', 'a') as file:
 
+            time_now = time.strftime('%H:%M:%S')
 
-            runs += 1
-            acc_current = epoch_train_test()
-            acc_total += acc_current
+            file.write(f'[{time_now}] accuracy: {cur_acc:.2f}, best: {cur_acc > best_acc}\n')
+
+        # We want highest accuracy network only
+        if cur_acc > best_acc:
+            best_acc = cur_acc
+
+            # Get all the params from the best performing network thus far
+            weights = []
+            biases = []
+            for dense_layer in net.layers[0::2]:
+                
+                weights.append(dense_layer.weights)
+                biases.append(dense_layer.biases)
             
+            np.savez(file='logs//layer_params.npz', layer1_weights=weights[0], layer1_biases=biases[0],
+                                                    layer2_weights=weights[1], layer2_biases=biases[1],
+                                                    layer3_weights=weights[2], layer3_biases=biases[2])
 
-            if acc_current < 10:
-                fails +=1
-                acc_total -= acc_current
-                runs -= 1
+        
+def test_saving() -> None:
+    net_params = np.load('logs//layer_params.npz')
 
-            if singular:
-                exit()
+    param_names = sorted(net_params.files)
+    print(param_names)
+    
+    for param_set in param_names:
+        print(net_params[param_set].shape)
 
-        except KeyboardInterrupt:
-            elapsed_time = time.time() - start_time
-            print(f'Number of runs: {runs}\nAverage accuracy: {acc_total / runs}\nNumber of fails: {fails}\n'
-                  f'Time taken: {elapsed_time:.1f}')
-            print(f"[{time.strftime('%H:%M:%S')}]")
-            exit()
-
-
-# def main() -> None:
-    # softmax_test()
-
-def softmax_test():
-    smax = Softmax()
-
-    inputs = np.array([[ 19.56129821, -32.53570809, -30.15035223, 101.03722652,  31.35531259,
-   6.68513487, -68.16097319,  54.38668008, -73.05622014,   2.29131153]])
-
-    print(f'abs_inputs: {abs(inputs)}')
-
-    smax.fwd(abs(inputs))
-
-    print(smax.outputs)
 
 if __name__ == '__main__':
     main()

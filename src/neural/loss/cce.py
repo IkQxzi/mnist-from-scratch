@@ -47,29 +47,14 @@ class CategoricalCrossEntropy(Loss):
         :param self: Description
         '''
         
-        # Get only sj and zeros otherwise
-        cor_pred_arr = self.true_classes * self.probs
+        # or yj / sj,
+        # where sj is prob at index of true class,
+        # and yj is true class
 
-        # Will be useful to do -1 / sj, and result 0 where sj = 0 
-        neg_ones = -1 * np.ones_like(cor_pred_arr)
-        zeros = np.zeros_like(cor_pred_arr)
+        epsilon = 1e-7 # Use epsilon to prevent exploding gradient (from 0 division)
+        self.input_dvals = -self.true_classes / (self.probs + epsilon)
 
-        
-        # Change warnings to exceptions, only for div & overflow
-        # np.seterr(divide='raise', over='raise')
+        # Get mean dvals to prevent batch sizes from effecting learning
+        self.input_dvals /= len(self.true_classes)
 
-        try:
-            # Do -1 / sj, skipping div 0 and replacing with 0
-            self.input_dvals = np.divide(neg_ones, cor_pred_arr, out=zeros, where=cor_pred_arr!=0)
-        
-        # Small div error (not 0 but small)
-        except FloatingPointError:
-            print(f'neg_ones:\n{neg_ones}\n cor_pred_arr:\n {cor_pred_arr}\n zeros:\n{zeros}')
 
-            # If all zeroes, print true & pred classes
-            for i, sample in enumerate(cor_pred_arr):
-                if np.all(sample) == 0:
-                    print(f'true_classes:\n{self.true_classes[i]}\nprobs:\n{self.probs}')
-
-            exit()
-        
