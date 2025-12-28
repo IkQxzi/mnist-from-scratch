@@ -15,7 +15,7 @@ from keras.datasets import mnist
 from neural import NetworkDense
 from neural import get_mnist_batches, get_mnist_data
 from tools.debugging import debug_style, warning_style
-from neural.analysis import get_best_net_acc
+from neural.analysis import get_best_net_acc, log_training_csv
 from neural.core import save_params
 from neural.layers import LayerDense
 from neural.layers.activations import * 
@@ -55,6 +55,10 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float) -> tuple
     # 1 epoch is the entire training set being forwarded
     for epoch in range(epochs):
         print(f"[{time.strftime('%H:%M:%S')}] Epoch: {epoch+1}")
+
+        # Reduce learning rate for last 15 epochs
+        if epoch == 15:
+            optimiser = StochasticGradientDescent(net, learning_rate=learning_rate/20, weight_decay=w_decay)
 
         for x_train, y_train in zip(x_train_batches, y_train_batches):
             
@@ -107,33 +111,32 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 
 def main() -> None:
     
-    l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
+    l_rates = [0.1]
     epochs = 30
     w_decay = 0
+    logpath = 'logs//best_networks.csv'
 
     counter = -1
-    best_acc = get_best_net_acc(path='logs//best_networks.csv')
+    best_acc = get_best_net_acc(path=logpath)
 
     while True:
+        best = False
         counter +=1
-        i = counter % 6
+        i = counter % len(l_rates) # To make it cycle learning rates
 
         l_rate = l_rates[i]
         net, cur_acc = epoch_train_test(l_rate, epochs=epochs, w_decay=w_decay)
         
-        # Write accuracy and time in file:
-        with open('logs//best_networks.txt', 'a') as file:
-
-            time_now = time.strftime('%H:%M:%S')
-
-            file.write(f'[{time_now}] learning rate: {l_rate}, w_decay: {w_decay}, accuracy: {cur_acc:.2f}, best: {cur_acc > best_acc}\n')
-
         # We want highest accuracy network only
         if cur_acc > best_acc:
+            best = True
             best_acc = cur_acc
 
             save_params(network=net, path=f'logs//layer_params_{cur_acc:.2f}_{l_rate}')
-            
+
+        # Write training results to file
+        log_training_csv(path=logpath, epochs=epochs, l_rate=l_rate, w_decay=w_decay, acc=cur_acc, best=best)            
+        
 
     
 def test_saving() -> None:

@@ -15,8 +15,7 @@ def get_best_net_acc(path: str) -> float:
 
     # Get the highest accuracy by looking for the latest 'best' net
     for row in reversed(f_content):
-        print(row['best'], bool(row['best']))
-        if bool(row['best']) == True:
+        if eval(row['best']) == True:
             best_acc = float(row['accuracy'])
         
             return best_acc
@@ -24,5 +23,4 @@ def get_best_net_acc(path: str) -> float:
     raise IndexError()
 
 
-print(get_best_net_acc(path='logs//best_networks.csv'))
 
