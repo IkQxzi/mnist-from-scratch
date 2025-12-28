@@ -13,13 +13,16 @@ def get_best_net_acc(path: str) -> float:
 
     f_content = read_csv_file(path, delimiter=',')
 
-    # Get the highest accuracy row-by-row
-    best_acc: float = 0
-    for row in f_content:
-        curr_acc = float(row['accuracy'])
-        if curr_acc > best_acc:
-            best_acc = curr_acc
+    # Get the highest accuracy by looking for the latest 'best' net
+    for row in reversed(f_content):
+        print(row['best'], bool(row['best']))
+        if bool(row['best']) == True:
+            best_acc = float(row['accuracy'])
+        
+            return best_acc
     
-    return best_acc
+    raise IndexError()
 
+
+print(get_best_net_acc(path='logs//best_networks.csv'))
 
