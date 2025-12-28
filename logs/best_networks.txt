@@ -1,0 +1,94 @@
+[21:38:07], learning rate: 0.005, accuracy: 94.40, best: True
+[21:46:46], learning rate: 0.006, accuracy: 94.51, best: True
+[21:56:22], learning rate: 0.007, accuracy: 94.63, best: True
+[22:05:05], learning rate: 0.008, accuracy: 94.82, best: True
+[22:14:13], learning rate: 0.009, accuracy: 94.92, best: True
+[22:23:27], learning rate: 0.01, accuracy: 94.74, best: False
+[22:32:34], learning rate: 0.005, accuracy: 94.58, best: False
+[22:41:46], learning rate: 0.006, accuracy: 94.56, best: False
+[22:50:59], learning rate: 0.007, accuracy: 94.88, best: False
+[22:59:52], learning rate: 0.008, accuracy: 94.78, best: False
+[23:09:07], learning rate: 0.009, accuracy: 94.74, best: False
+[23:18:20], learning rate: 0.01, accuracy: 94.63, best: False
+[23:28:13], learning rate: 0.005, accuracy: 94.76, best: False
+[23:38:25], learning rate: 0.006, accuracy: 94.74, best: False
+[23:48:36], learning rate: 0.007, accuracy: 94.92, best: False
+[23:58:31], learning rate: 0.008, accuracy: 95.06, best: True
+[00:08:09], learning rate: 0.009, accuracy: 94.73, best: False
+[00:17:32], learning rate: 0.01, accuracy: 94.83, best: False
+[00:57:50], learning rate: 0.005, accuracy: 94.37, best: True
+[01:06:40], learning rate: 0.006, accuracy: 94.55, best: True
+[01:15:21], learning rate: 0.007, accuracy: 94.72, best: True
+[01:24:03], learning rate: 0.008, accuracy: 94.66, best: False
+[01:32:46], learning rate: 0.009, accuracy: 94.74, best: True
+[01:41:27], learning rate: 0.01, accuracy: 95.08, best: True
+[01:50:11], learning rate: 0.005, accuracy: 94.73, best: False
+[01:58:54], learning rate: 0.006, accuracy: 95.13, best: True
+[02:07:35], learning rate: 0.007, accuracy: 94.60, best: False
+[02:16:17], learning rate: 0.008, accuracy: 94.71, best: False
+[02:24:58], learning rate: 0.009, accuracy: 94.44, best: False
+[02:33:40], learning rate: 0.01, accuracy: 94.91, best: False
+[02:42:20], learning rate: 0.005, accuracy: 94.70, best: False
+[02:51:03], learning rate: 0.006, accuracy: 94.61, best: False
+[02:59:43], learning rate: 0.007, accuracy: 94.88, best: False
+[03:08:24], learning rate: 0.008, accuracy: 94.99, best: False
+[03:17:05], learning rate: 0.009, accuracy: 94.89, best: False
+[03:25:45], learning rate: 0.01, accuracy: 94.71, best: False
+[03:34:25], learning rate: 0.005, accuracy: 94.44, best: False
+[03:43:05], learning rate: 0.006, accuracy: 94.77, best: False
+[03:51:46], learning rate: 0.007, accuracy: 94.69, best: False
+[04:00:26], learning rate: 0.008, accuracy: 94.54, best: False
+[04:09:07], learning rate: 0.009, accuracy: 94.84, best: False
+[04:17:46], learning rate: 0.01, accuracy: 94.60, best: False
+[04:26:27], learning rate: 0.005, accuracy: 94.49, best: False
+[04:35:08], learning rate: 0.006, accuracy: 94.60, best: False
+[04:43:48], learning rate: 0.007, accuracy: 94.86, best: False
+[04:52:29], learning rate: 0.008, accuracy: 94.99, best: False
+[05:01:09], learning rate: 0.009, accuracy: 94.82, best: False
+[05:09:50], learning rate: 0.01, accuracy: 94.87, best: False
+[05:19:43], learning rate: 0.005, accuracy: 94.78, best: False
+[05:28:32], learning rate: 0.006, accuracy: 94.72, best: False
+[05:37:15], learning rate: 0.007, accuracy: 94.56, best: False
+[05:45:56], learning rate: 0.008, accuracy: 94.68, best: False
+[05:54:41], learning rate: 0.009, accuracy: 94.63, best: False
+[06:03:25], learning rate: 0.01, accuracy: 94.77, best: False
+[06:12:07], learning rate: 0.005, accuracy: 94.65, best: False
+[06:20:49], learning rate: 0.006, accuracy: 94.71, best: False
+[06:29:31], learning rate: 0.007, accuracy: 94.75, best: False
+[06:38:14], learning rate: 0.008, accuracy: 94.57, best: False
+[06:46:58], learning rate: 0.009, accuracy: 94.88, best: False
+[06:56:16], learning rate: 0.01, accuracy: 94.77, best: False
+[07:04:57], learning rate: 0.005, accuracy: 94.75, best: False
+[07:13:41], learning rate: 0.006, accuracy: 94.79, best: False
+[07:22:22], learning rate: 0.007, accuracy: 94.75, best: False
+[07:31:05], learning rate: 0.008, accuracy: 94.63, best: False
+[07:40:00], learning rate: 0.009, accuracy: 94.76, best: False
+[07:48:51], learning rate: 0.01, accuracy: 94.56, best: False
+[07:57:36], learning rate: 0.005, accuracy: 94.84, best: False
+[08:06:25], learning rate: 0.006, accuracy: 94.75, best: False
+[08:15:09], learning rate: 0.007, accuracy: 94.90, best: False
+[08:23:53], learning rate: 0.008, accuracy: 94.95, best: False
+[08:32:37], learning rate: 0.009, accuracy: 94.68, best: False
+[08:41:22], learning rate: 0.01, accuracy: 94.62, best: False
+[08:50:06], learning rate: 0.005, accuracy: 94.65, best: False
+[08:58:50], learning rate: 0.006, accuracy: 94.72, best: False
+[09:07:33], learning rate: 0.007, accuracy: 94.54, best: False
+[09:16:19], learning rate: 0.008, accuracy: 94.73, best: False
+[09:25:05], learning rate: 0.009, accuracy: 94.79, best: False
+[09:33:49], learning rate: 0.01, accuracy: 94.78, best: False
+[09:42:34], learning rate: 0.005, accuracy: 94.60, best: False
+[09:51:20], learning rate: 0.006, accuracy: 94.88, best: False
+[10:00:05], learning rate: 0.007, accuracy: 95.03, best: False
+[10:08:50], learning rate: 0.008, accuracy: 94.65, best: False
+[10:17:35], learning rate: 0.009, accuracy: 94.73, best: False
+[10:26:20], learning rate: 0.01, accuracy: 94.75, best: False
+[10:35:20], learning rate: 0.005, accuracy: 94.73, best: False
+[10:44:13], learning rate: 0.006, accuracy: 94.81, best: False
+[21:30:51], learning rate: 0.005, w_decay: 0, accuracy: 94.73, best: True
+[21:39:29], learning rate: 0.006, w_decay: 0, accuracy: 94.90, best: True
+[21:48:05], learning rate: 0.007, w_decay: 0, accuracy: 94.88, best: False
+[21:56:45], learning rate: 0.008, w_decay: 0, accuracy: 94.91, best: True
+[22:06:07], learning rate: 0.009, w_decay: 0, accuracy: 95.18, best: True
+[22:15:17], learning rate: 0.01, w_decay: 0, accuracy: 94.67, best: False
+[22:24:12], learning rate: 0.005, w_decay: 0, accuracy: 94.62, best: False
+[22:32:19], learning rate: 0.006, w_decay: 0, accuracy: 94.66, best: False
