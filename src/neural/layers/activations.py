@@ -26,10 +26,8 @@ class ReLU(Activation):
     def bwd(self, chain_dvals: cp.ndarray) -> None:
         
         # Derivative is 1 if inputs >= 0, 0 otherwise
-        local_input_dvals = cp.divide(self.inputs, self.inputs, 
-                                      out=cp.zeros(self.inputs, dtype='float32'),
-                                      where=self.inputs!=0, 
-                                      dtype='float32')
+        # True/False arr -> 1s & 0s
+        local_input_dvals = (self.inputs != 0).astype('float32')
 
         # Chain rule, element-wise as they are the same shape
         self.input_dvals = chain_dvals * local_input_dvals

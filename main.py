@@ -23,14 +23,14 @@ from neural.loss import CategoricalCrossEntropy
 from neural.optimisers import StochasticGradientDescent
 
 
-def epoch_train_test(learning_rate: float, epochs: int, w_decay: float) -> tuple[NetworkDense, float]:
+def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_size: int) -> tuple[NetworkDense, float]:
 
     # For readability
     np.set_printoptions(suppress=True, precision=3)
 
     n_inputs = 784
     net_neurons = [784, 128, 10]
-    batch_size = 32
+    batch_size = batch_size
     learning_rate = learning_rate
     w_decay = w_decay # Halfed because not using traditional L2
     epochs = epochs
@@ -112,8 +112,9 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 def main() -> None:
     
     l_rates = [0.1]
-    epochs = 30
+    epochs = 1000
     w_decay = 0
+    batch_size = 32
     logpath = 'logs//best_networks.csv'
 
     counter = -1
@@ -125,7 +126,7 @@ def main() -> None:
         i = counter % len(l_rates) # To make it cycle learning rates
 
         l_rate = l_rates[i]
-        net, cur_acc = epoch_train_test(l_rate, epochs=epochs, w_decay=w_decay)
+        net, cur_acc = epoch_train_test(l_rate, epochs=epochs, w_decay=w_decay, batch_size=batch_size)
         
         # We want highest accuracy network only
         if cur_acc > best_acc:
