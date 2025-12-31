@@ -4,7 +4,7 @@ Created: Sprint 2
 Last modified: Sprint 3
 '''
 
-import numpy as np
+import cupy as cp
 
 from neural.core.base import Loss
 
@@ -13,7 +13,7 @@ class CategoricalCrossEntropy(Loss):
     Calculate categorical cross-entropy loss using one-hot encoded vectors
     '''
 
-    def calculate(self, probs: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def calculate(self, probs: cp.ndarray, true_classes: cp.ndarray) -> cp.ndarray: # type: ignore
         '''
         The CCE loss calculation, averaged over a batch of inputs.
         
@@ -28,13 +28,12 @@ class CategoricalCrossEntropy(Loss):
 
         # Perform the element wise product of true_classes and probs
         # to get a list of their products (zeros and then relevant values)
-        probs = np.clip(probs, 1e-6, 1)
-        # print(f'clipped probs: {probs}')
-        rel_list = true_classes * np.log(probs)
+        probs = cp.clip(probs, 1e-6, 1)
+        rel_list = true_classes * cp.log(probs)
         
         # Then sum the 2D array of relevant predictions
         # to get the relevant predictions for each sample in one list
-        total_pred_list = np.sum(rel_list, axis = 1) 
+        total_pred_list = cp.sum(rel_list, axis = 1) 
 
         # Multiply the sum of all predicted values by -1/N (greater loss = worse)
         self.outputs = -1 * total_pred_list
@@ -51,10 +50,13 @@ class CategoricalCrossEntropy(Loss):
         # where sj is prob at index of true class,
         # and yj is true class
 
-        epsilon = 1e-7 # Use epsilon to prevent exploding gradient (from 0 division)
+        # Use epsilon to prevent exploding gradient (from 0 division)
+        # Must be float32 to avoid upcasting to float64
+        epsilon = cp.float32(1e-7) 
         self.input_dvals = -self.true_classes / (self.probs + epsilon)
 
-        # Get mean dvals to prevent batch sizes from effecting learning
-        self.input_dvals /= len(self.true_classes)
+        # Get mean dvals to prevent batch sizes from affecting learning
+        # Keep float32 to avoid upcasting to float64
+        self.input_dvals /= cp.float32(len(self.true_classes))
 
 

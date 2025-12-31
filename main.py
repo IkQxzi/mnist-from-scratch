@@ -135,18 +135,10 @@ def main() -> None:
             save_params(network=net, path=f'logs//layer_params_{cur_acc:.2f}_{l_rate}')
 
         # Write training results to file
-        log_training_csv(path=logpath, epochs=epochs, l_rate=l_rate, w_decay=w_decay, acc=cur_acc, best=best)            
-        
-
-    
-def test_saving() -> None:
-    net_params = np.load('logs//layer_params.npz')
-
-    param_names = sorted(net_params.files)
-    print(param_names)
-    
-    for param_set in param_names:
-        print(net_params[param_set].shape)
+        log_training_csv(
+            path=logpath, epochs=epochs, l_rate=l_rate, 
+            w_decay=w_decay, acc=cur_acc, best=best
+                         )
 
 
 if __name__ == '__main__':

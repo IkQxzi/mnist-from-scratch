@@ -234,3 +234,13 @@ def softmax_test():
     smax.fwd(abs(inputs))
 
     print(smax.outputs)
+
+
+def test_saving() -> None:
+    net_params = np.load('logs//layer_params.npz')
+
+    param_names = sorted(net_params.files)
+    print(param_names)
+    
+    for param_set in param_names:
+        print(net_params[param_set].shape)

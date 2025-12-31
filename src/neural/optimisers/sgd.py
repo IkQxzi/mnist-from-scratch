@@ -4,8 +4,7 @@ Created: Sprint 3
 Last Modified: Sprint 3
 '''
 
-import numpy as np
-
+import cupy as cp
 
 from tools.debugging import debug_style
 from neural.core.base import Optimiser
@@ -23,8 +22,10 @@ class StochasticGradientDescent(Optimiser):
         '''
         
         self.network = network
-        self.l_rate = learning_rate
-        self.w_decay = weight_decay
+
+        # To keep network params float32
+        self.l_rate = cp.float32(learning_rate)
+        self.w_decay = cp.float32(weight_decay)
 
 
     def update_params(self) -> None:

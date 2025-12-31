@@ -5,7 +5,7 @@ Last Modified: Sprint 2
 Purpose:
 '''
 
-import numpy as np 
+import cupy as cp
 
 from neural.core.base import Activation
 from tools.debugging import debug_style
@@ -17,18 +17,19 @@ class ReLU(Activation):
     Formula: max(x, 0)
     '''
 
-    def fwd(self, inputs: np.ndarray) -> None:
+    def fwd(self, inputs: cp.ndarray) -> None:
 
         self.inputs = inputs
 
-        self.outputs = np.maximum(inputs, 0)
+        self.outputs = cp.maximum(inputs, 0, dtype='float32')
     
-    def bwd(self, chain_dvals: np.ndarray) -> None:
+    def bwd(self, chain_dvals: cp.ndarray) -> None:
         
         # Derivative is 1 if inputs >= 0, 0 otherwise
-        local_input_dvals = np.divide(self.inputs, self.inputs, 
-                                      out=np.zeros_like(self.inputs),
-                                      where=self.inputs!=0)
+        local_input_dvals = cp.divide(self.inputs, self.inputs, 
+                                      out=cp.zeros(self.inputs, dtype='float32'),
+                                      where=self.inputs!=0, 
+                                      dtype='float32')
 
         # Chain rule, element-wise as they are the same shape
         self.input_dvals = chain_dvals * local_input_dvals
@@ -41,11 +42,11 @@ class Sigmoid(Activation):
     '''
 
 
-    def fwd(self, inputs: np.ndarray) -> None:
+    def fwd(self, inputs: cp.ndarray) -> None:
 
         self.inputs = inputs
 
-        exp_vals = np.exp(inputs)
+        exp_vals = cp.exp(inputs)
         self.outputs = 1 / (1 + exp_vals)
     
 
@@ -55,12 +56,12 @@ class Tanh(Activation):
     Formula: (e^x - e^-x) / (e^x + e^-x)
     '''
 
-    def fwd(self, inputs: np.ndarray) -> None:
+    def fwd(self, inputs: cp.ndarray) -> None:
         
         self.inputs = inputs
         
-        pos_exp_vals = np.exp(inputs)
-        neg_exp_vals = np.exp(-inputs)
+        pos_exp_vals = cp.exp(inputs)
+        neg_exp_vals = cp.exp(-inputs)
 
         self.outputs = (pos_exp_vals - neg_exp_vals) / (pos_exp_vals + neg_exp_vals)
 
@@ -82,13 +83,13 @@ class ReLULeaky(Activation):
 
         self.leak_rate = leak_rate
 
-    def fwd(self, inputs: np.ndarray) -> None: # type: ignore
+    def fwd(self, inputs: cp.ndarray) -> None: # type: ignore
         
         self.inputs = inputs
 
         # leak_rate * inputs is only greater in the negative quadrant
         small_outputs = self.leak_rate * inputs
-        self.outputs = np.maximum(small_outputs, inputs)
+        self.outputs = cp.maximum(small_outputs, inputs)
 
 
 class Softmax(Activation):
@@ -103,7 +104,7 @@ class Softmax(Activation):
         self.debug = False
 
 
-    def fwd(self, inputs: np.ndarray) -> None: # type: ignore 
+    def fwd(self, inputs: cp.ndarray) -> None: # type: ignore 
         '''
         Sum exponentiated inputs and divide each exponentiated input by this sum.
         '''        
@@ -113,11 +114,11 @@ class Softmax(Activation):
         # print(debug_style(f'Inputs to Softmax: {inputs}'))
 
         # Shifting all inputs by same value has no effect on output distribution
-        max_input = np.max(inputs, axis=1, keepdims=True) # axis 1 = per sample
-        exp_vals = np.exp(inputs - max_input)
+        max_input = cp.max(inputs, axis=1, keepdims=True) # axis 1 = per sample
+        exp_vals = cp.exp(inputs - max_input, dtype='float32')
 
         # axis 0 = batch-wise, axis 1 = neuron-wise
-        exp_sum = np.sum(exp_vals, axis=1, keepdims=True) 
+        exp_sum = cp.sum(exp_vals, axis=1, keepdims=True, dtype='float32') 
 
         self.outputs = exp_vals / exp_sum
 
@@ -125,7 +126,7 @@ class Softmax(Activation):
         prints = False
         if self.debug:
             for i, sample in enumerate(self.outputs):
-                if np.any(sample == 1):
+                if cp.any(sample == 1):
                     if prints:
                         print(f'1 detected in Softmax outputs:\n{self.outputs[i]}.\n'
                             f'exp_sum:{exp_sum[i]}\nexp_vals:{exp_vals[i]}\n'
@@ -134,7 +135,7 @@ class Softmax(Activation):
                     self.one_overflows += 1
     
 
-    def bwd(self, chain_dvals: np.ndarray, true_classes: np.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
+    def bwd(self, chain_dvals: cp.ndarray, true_classes: cp.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
         '''
         Calculate the derivatives of Softmax w.r.t inputs, using chain rule.
 
@@ -159,18 +160,18 @@ class Softmax(Activation):
         # Get only the outputs at the correct indexes
         # sj (i = j), 0 otherwise
         cor_pred_arr = true_classes * self.outputs
-        cor_pred_list = np.sum(cor_pred_arr, axis=1)
+        cor_pred_list = cp.sum(cor_pred_arr, axis=1, dtype='float32')
 
         # Remove all sj from the list of outputs
         # so this list comprises of only si (i /= j), and 0 otherwise
         incor_pred_arr = self.outputs - cor_pred_arr
 
         # Multiply -si by sj by creating an arr with the cor vals on diagonal
-        cor_pred_diag = np.diag(cor_pred_list)
-        incor_pred_dvals = np.dot(cor_pred_diag, -1 * incor_pred_arr)
+        cor_pred_diag = cp.diag(cor_pred_list)
+        incor_pred_dvals = cp.dot(cor_pred_diag, -1 * incor_pred_arr)
 
         # Dvals at i /= j will be 0, because cor_pred_arr has sj and 0 otherwise
-        cor_pred_dvals = cor_pred_arr * (np.ones_like(cor_pred_arr) - cor_pred_arr)
+        cor_pred_dvals = cor_pred_arr * (cp.ones_like(cor_pred_arr) - cor_pred_arr)
 
         # Works because at other indexes, values are 0 for both
         local_input_dvals = incor_pred_dvals + cor_pred_dvals
@@ -178,9 +179,9 @@ class Softmax(Activation):
 
         # Remove all the zeros from loss_dvals
         # then multiply every sample by the derivative of loss w.r.t correct index input
-        cor_loss_dvals = np.sum(chain_dvals, axis=1)
-        cor_loss_dvals_diag = np.diag(cor_loss_dvals)
-        self.input_dvals = np.dot(cor_loss_dvals_diag, local_input_dvals)
+        cor_loss_dvals = cp.sum(chain_dvals, axis=1, dtype='float32')
+        cor_loss_dvals_diag = cp.diag(cor_loss_dvals)
+        self.input_dvals = cp.dot(cor_loss_dvals_diag, local_input_dvals)
 
 
         
