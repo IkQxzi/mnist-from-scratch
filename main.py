@@ -56,10 +56,6 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
     for epoch in range(epochs):
         print(f"[{time.strftime('%H:%M:%S')}] Epoch: {epoch+1}")
 
-        # Reduce learning rate for last 15 epochs
-        if epoch == 15:
-            optimiser = StochasticGradientDescent(net, learning_rate=learning_rate/20, weight_decay=w_decay)
-
         for x_train, y_train in zip(x_train_batches, y_train_batches):
             
             # np.random.shuffle(x_train)
@@ -111,8 +107,8 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 
 def main() -> None:
     
-    l_rates = [0.1]
-    epochs = 1000
+    l_rates = [0.01]
+    epochs = 30
     w_decay = 0
     batch_size = 32
     logpath = 'logs//best_networks.csv'
@@ -126,8 +122,11 @@ def main() -> None:
         i = counter % len(l_rates) # To make it cycle learning rates
 
         l_rate = l_rates[i]
+
+        start_time = time.time()
         net, cur_acc = epoch_train_test(l_rate, epochs=epochs, w_decay=w_decay, batch_size=batch_size)
-        
+        time_elapsed = time.time() - start_time
+
         # We want highest accuracy network only
         if cur_acc > best_acc:
             best = True
@@ -137,7 +136,7 @@ def main() -> None:
 
         # Write training results to file
         log_training_csv(
-            path=logpath, epochs=epochs, l_rate=l_rate, 
+            path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
             w_decay=w_decay, acc=cur_acc, best=best
                          )
 
