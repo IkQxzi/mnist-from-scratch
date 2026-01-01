@@ -102,18 +102,15 @@ class NetworkDense(Network):
         # self.calc_conf_scores()
 
 
-    def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray) -> None:
+    # Rewrite this rubbish
+    def bwd(self, **kwargs) -> None:
         '''
-        Backpropgate through layers, from Softmax to first layer.
-        
-        :param: loss_dvals -- Derivative of loss function w.r.t inputs.
-        :param: true_classes -- One-hot-encoded vector of correct outputs.
+        Backpropgate through layers, from output to first layer.
         '''
         
-        # Backpropogate through Softmax separately
-        # print(debug_style(f'Backprop: Loss -> Softmax'))
+        # Do using kwargs to handle any output activ    
         output_activ = self.layers[-1]
-        output_activ.bwd(chain_dvals=loss_dvals, true_classes=true_classes) # pyright: ignore[reportCallIssue]
+        output_activ.bwd(**kwargs)
 
         # Number of non-Softmax layers
         n_reg_layers = len(self.layers[:-1])

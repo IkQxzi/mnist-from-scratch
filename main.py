@@ -10,6 +10,7 @@ from typing import Iterator
 
 # from jax import jit
 import numpy as np
+import cupy as cp
 from keras.datasets import mnist
 
 from neural import NetworkDense
@@ -67,7 +68,7 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
 
             # Bwd pass
             loss.bwd()
-            net.bwd(loss_dvals=loss.input_dvals, true_classes=y_train)
+            net.bwd(chain_dvals=loss.input_dvals, true_classes=y_train)
 
             # Optimser update
             optimiser.update_params()
@@ -107,11 +108,11 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 
 def main() -> None:
     
-    l_rates = [0.01]
+    l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
     epochs = 30
     w_decay = 0
     batch_size = 32
-    logpath = 'logs//best_networks.csv'
+    logpath = 'logs//gpu_best_networks.csv'
 
     counter = -1
     best_acc = get_best_net_acc(path=logpath)
@@ -139,6 +140,7 @@ def main() -> None:
             path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
             w_decay=w_decay, acc=cur_acc, best=best
                          )
+        
 
 
 if __name__ == '__main__':

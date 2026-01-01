@@ -20,7 +20,7 @@ def get_best_net_acc(path: str) -> float:
         
             return best_acc
     
-    raise IndexError()
+    return 0
 
 
 
