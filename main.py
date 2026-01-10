@@ -68,13 +68,21 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
 
             # Bwd pass
             loss.bwd()
-            net.bwd(chain_dvals=loss.input_dvals, true_classes=y_train)
+            net.bwd(chain_dvals =loss.input_dvals, true_classes=y_train)
 
             # Optimser update
             optimiser.update_params()
+    
+        assert net.layers[0].weights.dtype == 'float32', f'Not float32: {net.layers[0].weights.dtype}'
+        assert net.layers[0].biases.dtype == 'float32', f'Not float32: {net.layers[0].biases.dtype}'
+        assert net.layers[0].weight_dvals.dtype == 'float32', f'Not float32: {net.layers[0].weight_dvals.dtype}'
+        assert net.layers[0].bias_dvals.dtype == 'float32', f'Not float32: {net.layers[0].bias_dvals.dtype}'
+
+        exit()
         
 
     avg_acc = net_test(net, x_test, y_test)
+
 
     return net, avg_acc
 
