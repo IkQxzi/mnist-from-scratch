@@ -1,5 +1,31 @@
-from datetime import datetime
+'''
+Contains logging & evaluation functions.
+'''
+
 import csv
+from datetime import datetime
+
+from tools.io import read_csv_file
+
+
+def get_best_net_acc(path: str) -> float:
+    '''
+    Get the best network accuracy from a .csv file
+    
+    :param path: .csv file to read from
+    :type path: str
+    '''
+
+    f_content = read_csv_file(path, delimiter=',')
+
+    # Get the highest accuracy by looking for the latest 'best' net
+    for row in reversed(f_content):
+        if eval(row['best']) == True:
+            best_acc = float(row['accuracy'])
+        
+            return best_acc
+    
+    return 0
 
 
 # Change at some point to log more generally
@@ -15,6 +41,4 @@ def log_training_csv(path: str, batch_size: int, epochs:int, l_rate: float, w_de
 
             writer = csv.writer(file, delimiter=',')
             writer.writerow([timestamp, time_taken, batch_size, epochs, l_rate, w_decay, acc, best])
-
-
 

@@ -11,7 +11,7 @@ from neural.core.base import Optimiser
 from neural.core.network import NetworkDense
 
 
-class StochasticGradientDescent(Optimiser):
+class SGD(Optimiser):
 
     def __init__(self, network: NetworkDense, learning_rate: float, weight_decay: float) -> None:
         '''

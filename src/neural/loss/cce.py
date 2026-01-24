@@ -8,7 +8,7 @@ import cupy as cp
 
 from neural.core.base import Loss
 
-class CategoricalCrossEntropy(Loss):
+class CCE(Loss):
     '''
     Calculate categorical cross-entropy loss using one-hot encoded vectors
     '''

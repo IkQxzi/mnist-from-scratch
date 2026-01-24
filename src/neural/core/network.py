@@ -28,10 +28,13 @@ class NetworkDense(Network):
         Initialise a neural network using the specified architecture.
 
         Keyword Args:
-            layers -- The architecture of the network
+            layers -- The architecture of the network (as objects).
         
         Attributes:
-            layer-arch -- A clean list of the layer names.
+            layers -- A list of the layer objects.
+            layer_arch -- A clean str list of the layer names.
+            probs -- A list of the networks predictions.
+            conf_scores -- The confidence of each prediction of the network.
         '''
 
         self.layers = layers # Both dense & activation layers
@@ -58,8 +61,8 @@ class NetworkDense(Network):
         self.conf_scores = np.array([], dtype=float)
 
 
-    def calc_conf_scores(self) -> None:
-        '''Calculate confidence scores using self.probs.'''
+    def __calc_conf_scores(self) -> None:
+        '''Calculate and update self.conf_scores using self.probs.'''
 
         output_sum = np.sum(self.probs, axis=1) # Sum of each sample
         self.conf_scores = np.ones_like(self.probs)
@@ -99,7 +102,7 @@ class NetworkDense(Network):
         # Update network outputs
         self.probs = self.layers[-1].outputs
 
-        # self.calc_conf_scores()
+        self.__calc_conf_scores()
 
 
     # Rewrite this rubbish

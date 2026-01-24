@@ -1,3 +1,3 @@
-from .sgd import StochasticGradientDescent
+from .sgd import SGD
 
-__all__ = ['StochasticGradientDescent']
+__all__ = ['SGD']

@@ -143,8 +143,11 @@ class Softmax(Activation):
         # si = softmax output for neuron at index i
         # sj = softmax output for neuron at index of true class (1)
         
-        # for sj, dval = sj * (1 - sj)
-        # for si, dval = -si * sj
+        # sj_dvals:
+        # sj * (1 - sj) * chain_dvals
+        # (sj * chain) - sj * (sj * chain)
+
+        # for si, dval = -si * sj * chain_dvals
 
         # chain_dvals: zeros at i, -1/sj for j 
         # chain_dvals @ (1- inputs): derivatives for sj, 0 otherwise

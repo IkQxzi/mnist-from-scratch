@@ -1,3 +1,3 @@
-from .cce import CategoricalCrossEntropy
+from .cce import CCE
 
-__all__ = ["CategoricalCrossEntropy"]
+__all__ = ["CCE"]

@@ -5,10 +5,10 @@ from tools.debugging import debug_style
 from neural.core import NetworkDense
 from neural.layers import LayerDense, ReLU, Softmax
 from neural.core import get_mnist_batches, get_mnist_data
-from neural.tests import gen_test_data, gen_test_one_hot
-from neural.tests import NetworkDenseExample
-from neural.loss import CategoricalCrossEntropy
-from neural.optimisers import StochasticGradientDescent
+from neural.tests.data import gen_test_data
+from neural.tests.dummy import gen_test_one_hot, NetworkDenseExample
+from neural.loss import CCE
+from neural.optimisers import SGD
 
 
 def test_pass() -> None:
@@ -38,16 +38,16 @@ def test_pass() -> None:
 
         true_classes = gen_test_one_hot(layer_arch=test_net.layer_arch, batch_size=batch_size) # pyright: ignore[reportArgumentType]
 
-        loss = CategoricalCrossEntropy()
+        loss = CCE()
         loss.calculate(test_net.network.probs, true_classes)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}\n")
 
 
-def manual_bwd(network: NetworkDense, loss: CategoricalCrossEntropy, cor_outputs: np.ndarray) -> None:
+def manual_bwd(network: NetworkDense, loss: CCE, cor_outputs: np.ndarray) -> None:
     
     smax: Softmax = network.layers[-1] # type: ignore
     smax.bwd(loss.input_dvals, true_classes=cor_outputs)
-    print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n'
+    print(debug_style(f'Softmax local_dvals:\n{smax.local_input_dvals}\n' # type: ignore
                       f'Softmax dvals (chain rule):\n{smax.input_dvals}'))
     
     final_dense_layer: LayerDense = network.layers[-2] # type: ignore
@@ -98,7 +98,7 @@ def toy_test() -> None:
                         f'{network.probs}\n'
                         f'Confidence scores\n{network.conf_scores}'))
 
-        loss = CategoricalCrossEntropy()
+        loss = CCE()
         loss.calculate(network.probs, cor_outputs)
         print(f"\n{debug_style(f'[Loss]: {loss.outputs}')}")
 
@@ -107,13 +107,13 @@ def toy_test() -> None:
 
         network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
 
-        sgd = StochasticGradientDescent(learning_rate=learning_rate, network=network, weight_decay=w_decay)
+        sgd = SGD(learning_rate=learning_rate, network=network, weight_decay=w_decay)
         sgd.update_params()
 
 
 def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> float:
 
-    loss = CategoricalCrossEntropy()
+    loss = CCE()
 
     # test pass
     loss_total = 0
@@ -160,12 +160,12 @@ def net_train_test() -> float:
     ]
 
     network = NetworkDense(layers=layers)
-    # optimiser = StochasticGradientDescent(learning_rate=0.01, network=network)
+    # optimiser = SGD(learning_rate=0.01, network=network)
 
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size=batch_size)
 
-    loss = CategoricalCrossEntropy()
-    optimiser = StochasticGradientDescent(learning_rate=learning_rate, 
+    loss = CCE()
+    optimiser = SGD(learning_rate=learning_rate, 
                                             network=network, weight_decay=w_decay)
 
     print('Training on 60,000 MNIST... [batch size: 32]')

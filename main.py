@@ -1,27 +1,23 @@
 '''
-The master file from which other functions and classes are called & instantiated. 
+The main file from which other functions and classes are called & instantiated. 
 Created: Sprint 1
-Last Modified: Sprint 2
+Last Modified: Sprint 7
 '''
 
+# Standard modules
 import time
-import csv
-from typing import Iterator
 
-# from jax import jit
+# External libraries
 import numpy as np
 import cupy as cp
 from keras.datasets import mnist
 
-from neural import NetworkDense
-from neural import get_mnist_batches, get_mnist_data
+# Internal imports
+from neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD, save_params
+from neural.core import get_mnist_batches
+from training import get_best_net_acc, log_training_csv
 from tools.debugging import debug_style, warning_style
-from neural.analysis import get_best_net_acc, log_training_csv
-from neural.core import save_params
-from neural.layers import LayerDense
-from neural.layers.activations import * 
-from neural.loss import CategoricalCrossEntropy
-from neural.optimisers import StochasticGradientDescent
+
 
 
 def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_size: int) -> tuple[NetworkDense, float]:
@@ -46,8 +42,8 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
     ]
 
     net = NetworkDense(layers)
-    loss = CategoricalCrossEntropy()
-    optimiser = StochasticGradientDescent(net, learning_rate, w_decay)
+    loss = CCE()
+    optimiser = SGD(net, learning_rate, w_decay)
 
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size)
 
@@ -89,7 +85,7 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
 
 def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> float:
 
-    loss = CategoricalCrossEntropy()
+    loss = CCE()
 
     # test pass
     loss_total = 0
@@ -115,7 +111,8 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 
 
 def main() -> None:
-    
+
+    # Promising rates to test
     l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
     epochs = 30
     w_decay = 0
