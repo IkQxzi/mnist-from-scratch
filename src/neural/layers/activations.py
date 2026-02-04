@@ -143,27 +143,43 @@ class Softmax(Activation):
         # si = softmax output for neuron at index i
         # sj = softmax output for neuron at index of true class (1)
         
-        # sj_dvals:
-        # sj * (1 - sj) * chain_dvals
-        # (sj * chain) - sj * (sj * chain)
+        # for sj, dval = sj * (1 - sj)
+        # for si, dval = -si * sj
 
-        # for si, dval = -si * sj * chain_dvals
+        # Might be useful to generate an inverted cor_pred_arr
+        # to multiply outputs by, thereby removing all sj from outputs
+        # so we can insert our own sj using the separate formula
 
-        # chain_dvals: zeros at i, -1/sj for j 
-        # chain_dvals @ (1- inputs): derivatives for sj, 0 otherwise
+        # for si
+        # multiply each subarr by the corresponding sj, so:
+        # self.outputs[0] * rel_pred_list[0], self.outputs[1] * rel_pred_list[1], etc.
+        # Can this be done using element-wise product? or dot-product?
 
-        # could do:
-        # for sj: chain_dvals @ (1 - inputs)
-        # for si: - si * inverted chain_dvals (elementwise)
+        # Get only the outputs at the correct indexes
+        # sj (i = j), 0 otherwise
+        cor_pred_arr = true_classes * self.outputs
+        cor_pred_list = cp.sum(cor_pred_arr, axis=1, dtype='float32')
 
-        sj_chain_product = chain_dvals * self.inputs
+        # Remove all sj from the list of outputs
+        # so this list comprises of only si (i /= j), and 0 otherwise
+        incor_pred_arr = self.outputs - cor_pred_arr
 
-        sj_dvals = chain_dvals - sj_chain_product
-        
-        si_dvals = self.inputs
+        # Multiply -si by sj by creating an arr with the cor vals on diagonal
+        cor_pred_diag = cp.diag(cor_pred_list)
+        incor_pred_dvals = cp.dot(cor_pred_diag, -1 * incor_pred_arr)
 
-        print(chain_dvals.shape, self.inputs.shape)
-        exit()
+        # Dvals at i /= j will be 0, because cor_pred_arr has sj and 0 otherwise
+        cor_pred_dvals = cor_pred_arr * (cp.ones_like(cor_pred_arr) - cor_pred_arr)
+
+        # Works because at other indexes, values are 0 for both
+        local_input_dvals = incor_pred_dvals + cor_pred_dvals
+        self.local_input_dvals = local_input_dvals
+
+        # Remove all the zeros from loss_dvals
+        # then multiply every sample by the derivative of loss w.r.t correct index input
+        cor_loss_dvals = cp.sum(chain_dvals, axis=1, dtype='float32')
+        cor_loss_dvals_diag = cp.diag(cor_loss_dvals)
+        self.input_dvals = cp.dot(cor_loss_dvals_diag, local_input_dvals)
         
 
 

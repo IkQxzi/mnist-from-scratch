@@ -61,7 +61,7 @@ class NetworkDense(Network):
         self.conf_scores = np.array([], dtype=float)
 
 
-    def __calc_conf_scores(self) -> None:
+    def _calc_conf_scores(self) -> None:
         '''Calculate and update self.conf_scores using self.probs.'''
 
         output_sum = np.sum(self.probs, axis=1) # Sum of each sample
@@ -73,12 +73,16 @@ class NetworkDense(Network):
         self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
 
 
-    def fwd(self, inputs: np.ndarray):
+    def fwd(self, inputs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         '''
         Forward a set of inputs through the entire network.
 
         Keyword Args:
-            inputs -- The inputs to the network
+            inputs -- The inputs to the network.
+
+        Returns:
+            probs -- The predictions of the network.
+            conf_scores -- How confident the network is for each prediction.
         '''
 
         # The inputs to the network need be passed only into the first layer
@@ -102,7 +106,9 @@ class NetworkDense(Network):
         # Update network outputs
         self.probs = self.layers[-1].outputs
 
-        self.__calc_conf_scores()
+        self._calc_conf_scores()
+
+        return self.probs, self.conf_scores
 
 
     # Rewrite this rubbish

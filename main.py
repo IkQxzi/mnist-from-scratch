@@ -73,8 +73,6 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
         assert net.layers[0].biases.dtype == 'float32', f'Not float32: {net.layers[0].biases.dtype}'
         assert net.layers[0].weight_dvals.dtype == 'float32', f'Not float32: {net.layers[0].weight_dvals.dtype}'
         assert net.layers[0].bias_dvals.dtype == 'float32', f'Not float32: {net.layers[0].bias_dvals.dtype}'
-
-        exit()
         
 
     avg_acc = net_test(net, x_test, y_test)
@@ -118,6 +116,7 @@ def main() -> None:
     w_decay = 0
     batch_size = 32
     logpath = 'logs//gpu_best_networks.csv'
+    logging = False
 
     counter = -1
     best_acc = get_best_net_acc(path=logpath)
@@ -141,11 +140,12 @@ def main() -> None:
             save_params(network=net, path=f'logs//layer_params_{cur_acc:.2f}_{l_rate}')
 
         # Write training results to file
-        log_training_csv(
-            path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
-            w_decay=w_decay, acc=cur_acc, best=best
-                         )
-        
+        if logging:
+            log_training_csv(
+                path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
+                w_decay=w_decay, acc=cur_acc, best=best
+                            )
+            
 
 
 if __name__ == '__main__':

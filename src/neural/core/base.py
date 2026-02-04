@@ -1,5 +1,3 @@
-from typing import List, Dict, Union, Optional
-
 import numpy as np
 
 from tools.debugging import warning_style
@@ -7,14 +5,18 @@ from tools.debugging import warning_style
 
 class Network:
     
-    def __init__(self, layers: list[object], *args, **kwargs) -> None:
+    def __init__(self, layers: list[object]) -> None:
         '''Initialise a network using the architecture specified.'''
         pass
 
 
-    def fwd(self, inputs: np.ndarray, *args, **kwargs) -> None:
+    def fwd(self, inputs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         '''Forward inputs through the network.'''
-        pass
+
+        self.probs: np.ndarray
+        self.conf_scores: np.ndarray
+
+        return self.probs, self.conf_scores
 
 
     def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray, *args, **kwargs) -> None:
