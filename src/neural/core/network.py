@@ -6,17 +6,16 @@ Purpose: Create and propogate neural network
 '''
 
 # Built-in imports
-import time
-from typing import cast, Sequence
+import json
 
 # External imports
-import numpy as np
+import cupy as cp
 
 # Local imports
 # from .base_classes import LayerGeneric
+from neural.core.base import Network
 from neural.layers import LayerDense
-from neural.core.base import Activation, Network, Layer
-from neural.layers.activations import *
+from neural.layers.activations import * # Probably bad practice
 
 from tools.debugging import debug_style, warning_style
 
@@ -29,7 +28,7 @@ class NetworkDense(Network):
 
         Keyword Args:
             layers -- The architecture of the network (as objects).
-            param_file -- A file which contains the parameters of the network.
+            param_file -- A file which jcontains the parameters of the network.
         
         Attributes:
             layers -- A list of the layer objects.
@@ -40,34 +39,71 @@ class NetworkDense(Network):
 
         self.layers = layers # Both dense & activation layers
 
-        # Enforce correct typing so the linter doesn't get mad
-        self.layers[::2] = cast(Sequence[LayerDense], self.layers[::2])
-        self.layers[1::2] = cast(Sequence[Activation], self.layers[1::2])
-
-        # for layer in self.layers:
-            # print(f'{layer.__class__.__name__}: {type(layer)}')
-
         # List of layer names (don't know how necessary)
         # TODO: make like above using list slicing
         self.layer_arch: list[str] = []
-        for i, arch in enumerate(self.layers):
-            if i % 2 == 0: # Indexes of dense layers [0, 2, 4]
-                self.layer_arch.append(f'LayerDense{arch.n_neurons, arch.n_inputs}')
-            else:
-                self.layer_arch.append(f'{arch.__class__.__name__}()')
+        # for i, arch in enumerate(sjelf.layers):
+        #     if i % 2 == 0: # Indexes of dense layers [0, 2, 4]
+        #         self.layer_arch.append(f'LayerDense{arch.n_neurons, arch.n_inputs}')
+        #     else:
+        #         self.layer_arch.append(f'{arch.__class__.__name__}()')
 
         # print(debug_style(f'Layer arch: {self.layer_arch}'))
 
         # Will be updated after forwarding
-        self.probs = np.array([], dtype=float) 
-        self.conf_scores = np.array([], dtype=float)
+        self.probs = cp.array([], dtype=float) 
+        self.conf_scores = cp.array([], dtype=float)
+
+    @classmethod
+    def load_pretrained(cls, param_path: str):
+        '''
+        Load a NetworkDense from a file of model params.
+        
+        :param param_path: Path to .npz parameter file.
+        :type param_path: str
+        '''
+
+        layers = []
+
+        container = cp.load(param_path)
+
+        metadata = json.loads(container['metadata'])
+        layers = container['layers']
+
+        for layer in layers:
+            
+            layer_class = getattr(layer, layer['type'])
+            layer_kwargs = layer['kwargs']
+
+            if layer_class is LayerDense:
+
+                # Get the keys for weights, biases and remove from kwargs
+                weight_key = layer_kwargs.pop('weight_key')
+                bias_key = layer_kwargs.pop('bias_key')
+
+                # create dense layer and load pretrained params
+                dense = LayerDense(**layer_kwargs)
+                dense.load_params(
+                                weights=container[weight_key],
+                                biases=container[bias_key]
+                                  )
+        
+                layers.append(dense)
+            
+            # Other funcs with params that aren't dense
+            elif layer_kwargs:
+                layers.append(layer_class(**layer_kwargs))
+
+            else:
+                layers.append(layer_class())
+            
 
 
     def _calc_conf_scores(self) -> None:
         '''Calculate and update self.conf_scores using self.probs.'''
 
-        output_sum = np.sum(self.probs, axis=1) # Sum of each sample
-        self.conf_scores = np.ones_like(self.probs)
+        output_sum = cp.sum(self.probs, axis=1) # Sum of each sample
+        self.conf_scores = cp.ones_like(self.probs)
         for i in range(output_sum.shape[0]):
             self.conf_scores[i] = (self.probs[i] / output_sum[i])
 
@@ -75,7 +111,7 @@ class NetworkDense(Network):
         self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
 
 
-    def fwd(self, inputs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def fwd(self, inputs: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
         '''
         Forward a set of inputs through the entire network.
 

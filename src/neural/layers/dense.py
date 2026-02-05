@@ -6,7 +6,6 @@ import numpy as np
 from neural.core.base import Layer
 
 
-# Inherit from LayerGeneric later
 class LayerDense(Layer):
 
     def __init__(self, n_neurons: int, n_inputs: int) -> None:
@@ -16,8 +15,6 @@ class LayerDense(Layer):
         Keyword Args: 
             n_neurons -- The number of neurons for the layer to have (set to None if params present).
             n_inputs -- The number of inputs the layer should expect (set to None if params present). 
-            weights -- A np arr of wejights (default None).
-            biases -- A np arr of biases (default None).
 
         Attributes:
             self.weights -- The ndarray of (random) weights for each input with shape (n_inputs, n_neurons).
@@ -25,8 +22,7 @@ class LayerDense(Layer):
         '''
 
         # For metadata
-        self.n_neurons = n_neurons
-        self.n_inputs = n_inputs
+        self.kwargs = {'n_neurons': n_neurons, 'n_inputs': n_inputs}
 
         # W ~ N(0,1)
         self.weights: cp.ndarray = cp.random.randn(n_neurons, n_inputs, dtype='float32')

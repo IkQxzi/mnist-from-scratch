@@ -15,4 +15,4 @@ net = NetworkDense(
 save_params(net, path='logs//a_test_params')
 
 params = np.load('logs//a_test_params.npz')
-print(params['layer0_biases'])
+print(params['layer0_biases '])

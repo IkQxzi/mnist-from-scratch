@@ -14,7 +14,7 @@ class App(ctk.CTk):
     RESOLUTION = '1920x1080'
     IMG_SIZE = (500, 500)
     DIGIT_IMG_SIZE = (28, 28)
-    SKIP_IMG_SELECT = True
+    SKIP_IMG_SELECT = False
 
     def __init__(self, network = None): # fix net later
         super().__init__() # keep App happy
