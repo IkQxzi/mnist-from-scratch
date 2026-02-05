@@ -12,8 +12,9 @@ class App(ctk.CTk):
 
     WIN_TITLE = "Handwritten Digit Recogniser Thingy"
     RESOLUTION = '1920x1080'
-    IMG_SIZE = (28, 28)
-    DIGIT_IMG_SIZE = (750, 750)
+    IMG_SIZE = (500, 500)
+    DIGIT_IMG_SIZE = (28, 28)
+    SKIP_IMG_SELECT = True
 
     def __init__(self, network = None): # fix net later
         super().__init__() # keep App happy
@@ -21,6 +22,7 @@ class App(ctk.CTk):
         # net stuff
         self.network = network
         self.curr_digit: Image.Image
+        self.curr_digit_arr: np.ndarray # 28x28
 
         # settings
         self.title(App.WIN_TITLE)
@@ -40,10 +42,10 @@ class App(ctk.CTk):
         self.import_btn.grid(sticky="n")
 
         self.scan_btn = CTkButton(self, text="Scan Image", command=self.scan_img)
-        self.scan_btn.grid(row=1, column=0, padx=20, pady=20)
+        self.scan_btn.grid(row=2, column=0, padx=20, pady=20)
         self.scan_btn.grid(sticky='n')
 
-        # will go row 2, col 0
+        # will go row 1, col 0
         self.img_label = CTkLabel(self, text="")
 
         # network outputs (set to grey)
@@ -86,10 +88,13 @@ class App(ctk.CTk):
     def import_img(self) -> CTkImage | None:
         '''Prompt user to import img and return it if selected.'''
 
-        img_path = filedialog.askopenfilename(title="Open Image File", 
+        if App.SKIP_IMG_SELECT:
+            img_path = r"C:\Users\ikram\Documents\Schoolwork\compsci\test_img.png"
+
+        else:
+            img_path = filedialog.askopenfilename(title="Open Image File", 
                                           filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.ico")])
 
-        # img_path = r"C:\Users\ikram\Documents\Schoolwork\compsci\test_img.png"
 
         if img_path:
 
@@ -115,13 +120,16 @@ class App(ctk.CTk):
         img_grey = img.convert(mode='F')
 
         img_arr = np.asarray(img_grey)
-        img_arr /= 255
+        img_arr = img_arr / 255
+        print(img_arr)
 
         return img_arr
 
     
     def scan_img(self):
         '''Pass image into neural network and display output.'''
+
+        self.curr_digit_arr = self.conv_img_np(self.curr_digit)
 
         # get img from self
         # pass through nn

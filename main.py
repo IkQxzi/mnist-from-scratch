@@ -112,7 +112,7 @@ def main() -> None:
 
     # Promising rates to test
     l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
-    epochs = 30
+    epochs = 1
     w_decay = 0
     batch_size = 32
     logpath = 'logs//gpu_best_networks.csv'
@@ -133,6 +133,7 @@ def main() -> None:
         time_elapsed = time.time() - start_time
 
         # We want highest accuracy network only
+        best_acc = 0
         if cur_acc > best_acc:
             best = True
             best_acc = cur_acc
@@ -145,6 +146,8 @@ def main() -> None:
                 path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
                 w_decay=w_decay, acc=cur_acc, best=best
                             )
+            
+        exit()
             
 
 

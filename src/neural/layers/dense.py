@@ -14,15 +14,17 @@ class LayerDense(Layer):
         Create a dense (fully-connected) layer with random weights and biases.
         
         Keyword Args: 
-            n_neurons -- The number of neurons for the layer to have.
-            n_inputs -- The number of inputs the layer should expect. 
+            n_neurons -- The number of neurons for the layer to have (set to None if params present).
+            n_inputs -- The number of inputs the layer should expect (set to None if params present). 
+            weights -- A np arr of wejights (default None).
+            biases -- A np arr of biases (default None).
 
         Attributes:
-            self.weights -- The ndarray of random weights for each input with shape (n_inputs, n_neurons).
-            self.biases -- The ndarray of random biases for each neuron with shape (n_neurons, 1).
+            self.weights -- The ndarray of (random) weights for each input with shape (n_inputs, n_neurons).
+            self.biases -- The ndarray of (random) biases for each neuron with shape (n_neurons, 1).
         '''
 
-        # For debugging/printing later 
+        # For metadata
         self.n_neurons = n_neurons
         self.n_inputs = n_inputs
 
@@ -34,6 +36,11 @@ class LayerDense(Layer):
 
         # Keep as float32 because will be populated later
         self.biases: cp.ndarray = cp.zeros((1, n_neurons), dtype='float32')
+
+    def load_params(self, weights:cp.ndarray, biases: np.ndarray):
+        '''Override random weights & biases with pretrained ones.'''
+        self.weights = weights
+        self.biases = biases
 
     
     def fwd(self, inputs: cp.ndarray): # pyright: ignore[reportIncompatibleMethodOverride]

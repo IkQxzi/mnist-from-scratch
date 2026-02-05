@@ -29,6 +29,7 @@ class NetworkDense(Network):
 
         Keyword Args:
             layers -- The architecture of the network (as objects).
+            param_file -- A file which contains the parameters of the network.
         
         Attributes:
             layers -- A list of the layer objects.
@@ -47,6 +48,7 @@ class NetworkDense(Network):
             # print(f'{layer.__class__.__name__}: {type(layer)}')
 
         # List of layer names (don't know how necessary)
+        # TODO: make like above using list slicing
         self.layer_arch: list[str] = []
         for i, arch in enumerate(self.layers):
             if i % 2 == 0: # Indexes of dense layers [0, 2, 4]

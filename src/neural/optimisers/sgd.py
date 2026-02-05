@@ -30,18 +30,19 @@ class SGD(Optimiser):
 
     def update_params(self) -> None:
 
-        # Only update Dense layers
-        for layer in self.network.layers[::2]:
-        
-            # Gradient of total loss w.r.t weights due to CCE Loss
-            w_cce_grad = layer.weight_dvals * self.l_rate
+        # Check each layer for Dense (allows for sequential Dense layers)
+        for layer in self.network.layers:
+            if layer.__class__.__name__ == 'LayerDense':
 
-            # Weights decayed due to learning rate and decay rate
-            w_decayed = layer.weights * (1 - 2 * self.l_rate * self.w_decay)
+                # Gradient of total loss w.r.t weights due to CCE Loss
+                w_cce_grad = layer.weight_dvals * self.l_rate
 
-            # Update using L2 Regularisation
-            layer.weights = w_decayed - w_cce_grad
+                # Weights decayed due to learning rate and decay rate
+                w_decayed = layer.weights * (1 - 2 * self.l_rate * self.w_decay)
 
-            # L2 has no effect on biases
-            layer.biases -= (layer.bias_dvals * self.l_rate)
+                # Update using L2 Regularisation
+                layer.weights = w_decayed - w_cce_grad
+
+                # L2 has no effect on biases
+                layer.biases -= (layer.bias_dvals * self.l_rate)
 

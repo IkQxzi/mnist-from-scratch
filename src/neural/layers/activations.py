@@ -25,7 +25,7 @@ class ReLU(Activation):
     
     def bwd(self, chain_dvals: cp.ndarray) -> None:
         
-        # Derivative is 1 if inputs >= 0, 0 otherwise
+        # Derivative is 1 if inputs >= 0, 0 otjherwise
         # True/False arr -> 1s & 0s
         local_input_dvals = (self.inputs != 0).astype('float32')
 
