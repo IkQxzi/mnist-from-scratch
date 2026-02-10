@@ -1,8 +1,7 @@
-import numpy as np
 import cupy as cp
 from keras.datasets import mnist
 
-from neural.core.data import create_one_hot
+from neural.core.data import conv_np_one_hot_cp, batch_split
 
 def get_mnist_data() -> tuple:
     '''
@@ -15,8 +14,8 @@ def get_mnist_data() -> tuple:
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
     # Convert (np) labels to (cp) one-hot vectors
-    y_train = create_one_hot(y_train)
-    y_test = create_one_hot(y_test)
+    y_train = conv_np_one_hot_cp(y_train)
+    y_test = conv_np_one_hot_cp(y_test)
 
     # Convert (np) input data into Cupy float32 arrs
     x_train = cp.asarray(x_train, dtype='float32')
@@ -33,20 +32,12 @@ def get_mnist_data() -> tuple:
     return (x_train, y_train), (x_test, y_test)
 
 
+# TODO: deprecate
 def get_mnist_batches(batch_size: int):
     '''Gets MNIST training and test data, and returns the training data in batches.'''
 
-
     (x_train, y_train), (x_test, y_test) = get_mnist_data()
 
-    # Format input data as batches
-    x_batch_shape = (int(x_train.shape[0]/batch_size), batch_size, 784)
-    x_train_batches = cp.reshape(x_train, x_batch_shape)
+    x_train, y_train = batch_split(x_train, batch_size), batch_split(y_train, batch_size)
 
-    assert cp.all(x_train_batches <= 1), "Pixel values not standardised correctly."
-
-    # Use cp.reshape() instead of cp.split() to get 2D arr instead of list[arrs]
-    y_batch_shape = (int(y_train.shape[0]/batch_size), batch_size, 10)
-    y_train_batches = cp.reshape(y_train, y_batch_shape)
-
-    return (x_train_batches, y_train_batches), (x_test, y_test)
+    return (x_train, y_train), (x_test, y_test)

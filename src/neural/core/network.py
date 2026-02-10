@@ -77,15 +77,16 @@ class NetworkDense(Network):
 
             if layer_class is LayerDense:
 
-                # Get the keys for weights, biases and remove from kwargs
-                weight_key = layer_kwargs.pop('weight_key')
-                bias_key = layer_kwargs.pop('bias_key')
+                # Get the keys for weights, biases
+                keys = layer['keys']
+                w_key = keys['w_key']
+                b_key = keys['b_key']
 
-                # create dense layer and load pretrained params
+                # create dense layer and load pretrained params (from container)
                 dense = LayerDense(**layer_kwargs)
                 dense.load_params(
-                                weights=container[weight_key],
-                                biases=container[bias_key]
+                                weights=container[w_key],
+                                biases=container[b_key]
                                   )
         
                 layers.append(dense)
@@ -94,10 +95,13 @@ class NetworkDense(Network):
             elif layer_kwargs:
                 layers.append(layer_class(**layer_kwargs))
 
+            # TODO: find another more elegant solution instead of if statement
+            # See if there is a way to pass **kwargs and have it be ignored
             else:
                 layers.append(layer_class())
-            
 
+        return cls(layers)
+            
 
     def _calc_conf_scores(self) -> None:
         '''Calculate and update self.conf_scores using self.probs.'''
@@ -155,7 +159,8 @@ class NetworkDense(Network):
         Backpropgate through layers, from output to first layer.
         '''
         
-        # Do using kwargs to handle any output activ    
+        # Do using kwargs to handle any output activ
+        # NOTE: using kwargs is evil
         output_activ = self.layers[-1]
         output_activ.bwd(**kwargs)
 
@@ -165,8 +170,9 @@ class NetworkDense(Network):
         # Iterate through layers backwards, from final LayerDense to first LayerDense
         for i, layer in enumerate(self.layers[-2::-1]):
             
-            fwd_layer = self.layers[n_reg_layers-i]
             # print(debug_style(f'Backprop: {fwd_layer.__class__.__name__} -> {layer.__class__.__name__}'))
+            
+            fwd_layer = self.layers[n_reg_layers-i]
             layer.bwd(fwd_layer.input_dvals)  
 
 

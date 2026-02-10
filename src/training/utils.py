@@ -18,7 +18,7 @@ def get_best_net_acc(path: str) -> float:
 
     f_content = read_csv_file(path, delimiter=',')
 
-    # Get the highest accuracy by looking for the latest 'best' net
+    # Get the highest accuracy by lkooking for the latest 'best' net
     for row in reversed(f_content):
         if eval(row['best']) == True:
             best_acc = float(row['accuracy'])

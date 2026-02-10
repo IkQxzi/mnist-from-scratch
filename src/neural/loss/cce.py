@@ -13,9 +13,10 @@ class CCE(Loss):
     Calculate categorical cross-entropy loss using one-hot encoded vectors
     '''
 
-    def calculate(self, probs: cp.ndarray, true_classes: cp.ndarray) -> cp.ndarray: # type: ignore
+    def calculate(self, probs: cp.ndarray, true_classes: cp.ndarray): # type: ignore
         '''
-        The CCE loss calculation, averaged over a batch of inputs.
+        The CCE loss calculation, averaged over a batch of inputs.\n
+        Updates self.outputs
         
         Keyword Args:
             probs -- probability distribution from the final layer

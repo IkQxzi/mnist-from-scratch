@@ -18,8 +18,8 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     :param path: Name of file to save params to (not incl. extension). 
     :type path: str
     
-    :param metadata: Information about how the network was trained (epochs, l_rate, etc.).
-    :type metadata: dict
+    :param training_metadata: Information about how the network was trained (epochs, l_rate, etc.).
+    :type training_metadata: dict
     '''
 
     # Training and layer metadata
@@ -34,28 +34,22 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     for i, layer in enumerate(network.layers):
 
         metadata['layers'][i] = {
-            'type': layer.__class__.__name__
+            'class': layer.__class__,
+            'kwargs': layer.kwargs
         }
 
-        # For leaky relu, etc.
-        if hasattr(layer, 'kwargs'):
-
-            metadata['layers'][i] = {
-                'type': layer.__class__.__name__,
-                'kwargs': layer.kwargs
-            }
-
+        # Save param keys for dense layers
         if isinstance(layer, LayerDense):
 
-            # Create keys to weights & biases for dense layers
-            w_key = f'layer{i}_weights'
-            b_key = f'layer{i}_biases'
+            # Create unique weight, bias keys for each layer
+            w_key = f'l{i}_w'
+            b_key = f'l{i}_b'
 
-            # Add weights & biases using unique key names
-            params[f'layer{i}_weights'] = layer.weights
-            params[f'layer{i}_biases'] = layer.biases
+            # Add weights & biases to params using unique key names
+            params[w_key] = layer.weights
+            params[b_key] = layer.biases
 
-            keys = {'weight_key': w_key, 'bias_key': b_key}
+            keys = {'w_key': w_key, 'b_key': b_key}
 
             # Add weight & bias keys to layer metadata
             metadata['layers'][i]['keys'] = keys

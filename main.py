@@ -59,7 +59,7 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
             # np.random.shuffle(y_train)
 
             # Fwd pass
-            net.fwd(x_train)
+            net.fwd(x_train)j
             loss.calculate(probs=net.probs, true_classes=y_train)
 
             # Bwd pass
@@ -112,9 +112,9 @@ def main() -> None:
 
     # Promising rates to test
     l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
-    epochs = 1
+    epochs = 1000
     w_decay = 0
-    batch_size = 32
+    batch_size = 1000
     logpath = 'logs//gpu_best_networks.csv'
     logging = False
 

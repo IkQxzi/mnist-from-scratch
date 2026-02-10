@@ -1,4 +1,4 @@
-import numpy as np
+import cupy as cp
 
 from tools.debugging import warning_style
 
@@ -10,16 +10,16 @@ class Network:
         pass
 
 
-    def fwd(self, inputs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def fwd(self, inputs: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
         '''Forward inputs through the network.'''
 
-        self.probs: np.ndarray
-        self.conf_scores: np.ndarray
+        self.probs: cp.ndarray
+        self.conf_scores: cp.ndarray
 
         return self.probs, self.conf_scores
 
 
-    def bwd(self, loss_dvals: np.ndarray, true_classes: np.ndarray, *args, **kwargs) -> None:
+    def bwd(self, loss_dvals: cp.ndarray, true_classes: cp.ndarray, *args, **kwargs) -> None:
         '''Backpropogate through the network.'''
         pass
 
@@ -45,10 +45,10 @@ class Layer:
     def __init__(self, *args, **kwargs) -> None:
         pass
 
-    def fwd(self, inputs: np.ndarray):
+    def fwd(self, inputs: cp.ndarray):
         pass
 
-    def bwd(self, dvalues: np.ndarray, *args, **kwargs):
+    def bwd(self, dvalues: cp.ndarray, *args, **kwargs):
         pass
 
 
@@ -61,7 +61,11 @@ class Activation(Layer):
         # to prevent overriding parent class behaviour
         super().__init_subclass__()
 
-        # All activation functions require forwarding logic for fwd() to work
+        # All activation functions require kwargs to know how to save their params
+        if not hasattr(cls, 'kwargs'):
+            print(f'WARNING: No kwargs attribute implemented for layer type: {cls.__name__}')
+
+        # All activation functions require fwd() & bwd() to work
         if 'fwd' not in cls.__dict__:
             print(f'WARNING: No fwd() method implemented for layer type: {cls.__name__}')
 
@@ -69,7 +73,7 @@ class Activation(Layer):
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
 
-    def fwd(self, inputs: np.ndarray) -> None:
+    def fwd(self, inputs: cp.ndarray) -> None:
         '''
         Performs forward pass.
 
@@ -77,24 +81,24 @@ class Activation(Layer):
             outputs -- the outputs of the forward pass.
         '''
 
-        self.outputs: np.ndarray
+        self.outputs: cp.ndarray
         pass
 
 
-    def bwd(self, chain_dvals: np.ndarray) -> None: # type: ignore
+    def bwd(self, chain_dvals: cp.ndarray) -> None: # type: ignore
         '''
         Performs forward pass using _fwd_func().
 
         Attributes:
             input_dvals -- The derivatives of the output w.r.t inputs.
         '''
-        self.input_dvals: np.ndarray
+        self.input_dvals: cp.ndarray
         pass
 
 
 # class ActivationOutput(Activation):
 
-#     def bwd(self, chain_dvals: np.ndarray, true_classes: np.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
+#     def bwd(self, chain_dvals: cp.ndarray, true_classes: cp.ndarray) -> None: # pyright: ignore[reportIncompatibleMethodOverride]
 
 #         pass
 
@@ -115,7 +119,7 @@ class Loss():
             print(f'WARNING: No bwd() method implemented for layer type: {cls.__name__}')
 
 
-    def calculate(self, probs: np.ndarray, true_classes: np.ndarray) -> np.ndarray: # type: ignore
+    def calculate(self, probs: cp.ndarray, true_classes: cp.ndarray) -> cp.ndarray: # type: ignore
         '''
         Calculates CCE Loss.
 

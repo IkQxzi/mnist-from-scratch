@@ -1,9 +1,10 @@
+import os
 
 import numpy as np
 
 # from neural import NetworkDense
 import customtkinter as ctk
-from customtkinter import CTkImage, CTkLabel, CTkButton
+from customtkinter import CTkImage, CTkLabel, CTkButton, CTkComboBox
 from customtkinter import filedialog
 from PIL import Image, ImageTk, ImageOps, ImageFile
 
@@ -15,6 +16,7 @@ class App(ctk.CTk):
     IMG_SIZE = (500, 500)
     DIGIT_IMG_SIZE = (28, 28)
     SKIP_IMG_SELECT = False
+    PRETRAINED_NET_PATH = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
 
     def __init__(self, network = None): # fix net later
         super().__init__() # keep App happy
@@ -33,6 +35,10 @@ class App(ctk.CTk):
         # widgets
         self.display_widgets()
 
+        
+        self.curr_network = self.net_selection.get()
+        print(self.curr_network)
+
 
     def display_widgets(self):
 
@@ -48,6 +54,11 @@ class App(ctk.CTk):
         # will go row 1, col 0
         self.img_label = CTkLabel(self, text="")
 
+        # Selection of pretrained networks to choose from
+        self.net_selection = CTkComboBox(self, values=self.get_pretrained_networks())
+        self.net_selection.grid(row=2, column=2, padx=20, pady=20)
+        self.after(1000, )
+
         # network outputs (set to grey)
         self.net_pred_lbl = CTkLabel(self, text="The network's prediction will be displayed here.")
         self.net_pred_lbl.grid(row=3, column=0, padx=20, pady=5)
@@ -57,6 +68,18 @@ class App(ctk.CTk):
 
         # do last
         self.gpu_usage_lbl = CTkLabel
+
+
+    def get_pretrained_networks(self) -> list[str]:
+        '''Get list of file names (without extension) of pretrained networks available for use.'''
+        
+        file_names = os.listdir(path=App.PRETRAINED_NET_PATH)
+
+        clean_f_names = [file_name.strip('.npz') for file_name in file_names]
+
+        return clean_f_names
+
+
 
 
     def update_net_lbls(self, new_pred: int, new_conf: float):

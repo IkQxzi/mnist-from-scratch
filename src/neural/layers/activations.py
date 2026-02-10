@@ -17,6 +17,9 @@ class ReLU(Activation):
     Formula: max(x, 0)
     '''
 
+    def __init__(self) -> None:
+        self.kwargs = None
+
     def fwd(self, inputs: cp.ndarray) -> None:
 
         self.inputs = inputs
