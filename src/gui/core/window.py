@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import cupy as cp
 
 # from neural import NetworkDense
 import customtkinter as ctk
@@ -8,6 +9,7 @@ from customtkinter import CTkImage, CTkLabel, CTkButton, CTkComboBox
 from customtkinter import filedialog
 from PIL import Image, ImageTk, ImageOps, ImageFile
 
+from neural.core.network import NetworkDense
 
 class App(ctk.CTk):
 
@@ -17,12 +19,13 @@ class App(ctk.CTk):
     DIGIT_IMG_SIZE = (28, 28)
     SKIP_IMG_SELECT = False
     PRETRAINED_NET_PATH = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
+    UPDATE_INTERVAL = 1000 # in ms
 
-    def __init__(self, network = None): # fix net later
+    def __init__(self): # fix net later
         super().__init__() # keep App happy
 
         # net stuff
-        self.network = network
+        self.network: NetworkDense
         self.curr_digit: Image.Image
         self.curr_digit_arr: np.ndarray # 28x28
 
@@ -34,12 +37,11 @@ class App(ctk.CTk):
 
         # widgets
         self.display_widgets()
-
         
         self.curr_network = self.net_selection.get()
         print(self.curr_network)
 
-
+ 
     def display_widgets(self):
 
         # Buttons
@@ -55,9 +57,10 @@ class App(ctk.CTk):
         self.img_label = CTkLabel(self, text="")
 
         # Selection of pretrained networks to choose from
+        # Fill with values first to not have 'CTkComboBox' as the default value
         self.net_selection = CTkComboBox(self, values=self.get_pretrained_networks())
+        self.update_net_selection() # constantly recalls itself
         self.net_selection.grid(row=2, column=2, padx=20, pady=20)
-        self.after(1000, )
 
         # network outputs (set to grey)
         self.net_pred_lbl = CTkLabel(self, text="The network's prediction will be displayed here.")
@@ -69,17 +72,22 @@ class App(ctk.CTk):
         # do last
         self.gpu_usage_lbl = CTkLabel
 
+    
+    def update_net_selection(self) -> None:
+        '''Update the display of available networks every time interval.'''
+
+        self.net_selection.configure(values=self.get_pretrained_networks())
+        self.after(App.UPDATE_INTERVAL, self.update_net_selection)
+
 
     def get_pretrained_networks(self) -> list[str]:
         '''Get list of file names (without extension) of pretrained networks available for use.'''
         
         file_names = os.listdir(path=App.PRETRAINED_NET_PATH)
 
-        clean_f_names = [file_name.strip('.npz') for file_name in file_names]
+        clean_f_names = [file_name.rstrip('.npz') for file_name in file_names]
 
         return clean_f_names
-
-
 
 
     def update_net_lbls(self, new_pred: int, new_conf: float):
@@ -87,6 +95,11 @@ class App(ctk.CTk):
 
         self.net_pred_lbl.configure(text=f'The network predicts this number is a: {new_pred}')
         self.net_conf_lbl.configure(text=f"The network is {new_conf}% confident in its prediction.")
+
+
+    # Don't yet know what this will return
+    def get_net_outputs(self, inputs: cp.ndarray):
+        net_probs = self.network.fwd(inputs)
 
 
     def display_img(self):
