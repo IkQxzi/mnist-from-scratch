@@ -33,6 +33,7 @@ class LayerDense(Layer):
         # Keep as float32 because will be populated later
         self.biases: cp.ndarray = cp.zeros((1, n_neurons), dtype='float32')
 
+
     def load_params(self, weights:cp.ndarray, biases: cp.ndarray):
         '''Override random weights & biases with pretrained ones.'''
         self.weights = weights

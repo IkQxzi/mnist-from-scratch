@@ -24,7 +24,6 @@ class CCE(Loss):
         '''
 
         self.probs = probs
-        self.true_classes = true_classes
         self.batch_size = probs.shape[0]
 
         # Perform the element wise product of true_classes and probs
@@ -40,7 +39,7 @@ class CCE(Loss):
         self.outputs = -1 * total_pred_list
 
 
-    def bwd(self) -> None:
+    def bwd(self, probs: cp.ndarray, true_classes: cp.ndarray) -> None:
         '''
         Calculates the derivatives of CCE Loss w.r.t inputs. Does not depend on fwding first.
         
@@ -54,10 +53,10 @@ class CCE(Loss):
         # Use epsilon to prevent exploding gradient (from 0 division)
         # Must be float32 to avoid upcasting to float64
         epsilon = cp.float32(1e-7) 
-        self.input_dvals = -self.true_classes / (self.probs + epsilon)
+        self.input_dvals = -true_classes / (probs + epsilon)
 
         # Get mean dvals to prevent batch sizes from affecting learning
         # Keep float32 to avoid upcasting to float64
-        self.input_dvals /= cp.float32(len(self.true_classes))
+        self.input_dvals /= cp.float32(len(true_classes))
 
 

@@ -31,49 +31,37 @@ class NetworkDense(Network):
         
         Attributes:
             layers -- A list of the layer objects.
-            layer_arch -- A clean str list of the layer names.
             probs -- A list of the networks predictions.
             conf_scores -- The confidence of each prediction of the network.
         '''
 
         self.layers = layers # Both dense & activation layers
 
-        # List of layer names (don't know how necessary)
-        # TODO: make like above using list slicing
-        self.layer_arch: list[str] = []
-        # for i, arch in enumerate(sjelf.layers):
-        #     if i % 2 == 0: # Indexes of dense layers [0, 2, 4]
-        #         self.layer_arch.append(f'LayerDense{arch.n_neurons, arch.n_inputs}')
-        #     else:
-        #         self.layer_arch.append(f'{arch.__class__.__name__}()')
-
-        # print(debug_style(f'Layer arch: {self.layer_arch}'))
-
         # Will be updated after forwarding
         self.probs = cp.array([], dtype=float) 
         self.conf_scores = cp.array([], dtype=float)
 
     @classmethod
-    def load_pretrained(cls, param_path: str):
+    def load_pretrained(cls, container: dict):
         '''
-        Load a NetworkDense from a file of model params.
+        Load a NetworkDense using a container from a .npz file.
         
-        :param param_path: Path to .npz parameter file.
-        :type param_path: str
+        :param container: The container from the .npz file.
+        :type container: dict
         '''
 
+        # List of layer objects (as in __init__())
         layers = []
 
-        container = cp.load(param_path)
+        # The list of dicts for each layer
+        layer_params = container['layers']
 
-        metadata = json.loads(container['metadata'])
-        layers = container['layers']
-
-        for layer in layers:
+        for layer in layer_params:
             
             layer_class = getattr(layer, layer['type'])
             layer_kwargs = layer['kwargs']
 
+            # Create dense layer and load pretrained params (from container)
             if layer_class is LayerDense:
 
                 # Get the keys for weights, biases
@@ -81,7 +69,7 @@ class NetworkDense(Network):
                 w_key = keys['w_key']
                 b_key = keys['b_key']
 
-                # create dense layer and load pretrained params (from container)
+                # load_params overwrites random params
                 dense = LayerDense(**layer_kwargs)
                 dense.load_params(
                                 weights=container[w_key],

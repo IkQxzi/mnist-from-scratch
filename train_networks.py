@@ -7,7 +7,7 @@ from training import train_network, test_network, save_params
 def main() -> None:
 
     HYPERPARAMS = {
-        'epochs': 30,
+        'epochs': 1,
         'l_rate': 0.01,
         'w_decay': 1e-4,
         'batch_size': 32

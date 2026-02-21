@@ -45,7 +45,7 @@ def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.nda
             network.fwd(x_batch)
 
             # bwd pass
-            loss.bwd()
+            loss.bwd(probs=network.probs, true_classes=y_batch)
             network.bwd(chain_dvals=loss.input_dvals, true_classes=y_batch)
 
             # optimiser update
@@ -74,9 +74,9 @@ def test_network(network: NetworkDense, test_data: tuple[cp.ndarray, cp.ndarray]
 
     # Get the most confident class & compare to true class for acc
     # Then avg. over samples
-    pred = cp.argmax(network.probs, axis=1)
-    pred_total = cp.where(pred == y_test)
-    avg_accuracy = 100 * (pred_total / n_samples)
+    pred_indices = cp.argmax(network.probs, axis=1)
+    cor_pred = y_test[pred_indices == 1]
+    avg_accuracy = 100 * (cor_pred.shape[0] / n_samples)
     
     print(f'Average loss on test set: {avg_loss}')
     print(f'Average accuracy on test set: {avg_accuracy}')

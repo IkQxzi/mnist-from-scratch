@@ -33,10 +33,10 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     # Generate layer metadata
     for i, layer in enumerate(network.layers):
 
-        metadata['layers'][i] = {
+        metadata['layers'].append({
             'class': layer.__class__,
             'kwargs': layer.kwargs
-        }
+        })
 
         # Save param keys for dense layers
         if isinstance(layer, LayerDense):
