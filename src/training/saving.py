@@ -20,6 +20,12 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     
     :param training_metadata: Information about how the network was trained (epochs, l_rate, etc.).
     :type training_metadata: dict
+
+    container/.npz file:
+        metadata: dict(layers: list, training: dict), 
+        layers: list(cls_name: str, kwargs: dict | None, keys: dict)
+            keys: dict(w_key, b_key)
+        training: dict(training_metadata)
     '''
 
     # Training and layer metadata
@@ -34,7 +40,7 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     for i, layer in enumerate(network.layers):
 
         metadata['layers'].append({
-            'class': layer.__class__,
+            'cls_name': layer.__class__.__name__,
             'kwargs': layer.kwargs
         })
 

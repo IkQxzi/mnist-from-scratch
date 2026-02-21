@@ -14,8 +14,8 @@ import cupy as cp
 # Local imports
 # from .base_classes import LayerGeneric
 from neural.core.base import Network
-from neural.layers import LayerDense
-from neural.layers.activations import * # Probably bad practice
+from neural.layers.dense import LayerDense
+from neural.layers import activations
 
 from tools.debugging import debug_style, warning_style
 
@@ -58,11 +58,11 @@ class NetworkDense(Network):
 
         for layer in layer_params:
             
-            layer_class = getattr(layer, layer['type'])
+            layer_cls_name = getattr(layer, layer['cls_name'])
             layer_kwargs = layer['kwargs']
 
             # Create dense layer and load pretrained params (from container)
-            if layer_class is LayerDense:
+            if layer_cls_name is LayerDense:
 
                 # Get the keys for weights, biases
                 keys = layer['keys']
@@ -80,12 +80,16 @@ class NetworkDense(Network):
             
             # Other funcs with params that aren't dense
             elif layer_kwargs:
-                layers.append(layer_class(**layer_kwargs))
+                # Get the activation function from the list of activations
+                act_func = getattr(activations, layer_cls_name)
+                layers.append(act_func(**layer_kwargs)) # Pass in kwargs
 
             # TODO: find another more elegant solution instead of if statement
             # See if there is a way to pass **kwargs and have it be ignored
             else:
-                layers.append(layer_class())
+                # Same as above
+                act_func = getattr(activations, layer_cls_name)
+                layers.append(act_func()) # No kwargs to pass
 
         return cls(layers)
             
