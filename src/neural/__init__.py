@@ -1,6 +1,5 @@
 # Core stuff
 from .core.network import NetworkDense
-from .core import save_params
 
 # Layers
 from .layers.dense import LayerDense
@@ -20,5 +19,4 @@ __all__ = [
     "Softmax",
     "CCE",
     "SGD",
-    "save_params"
 ]

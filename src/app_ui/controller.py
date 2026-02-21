@@ -7,7 +7,7 @@ from neural import NetworkDense
 
 # from gui.frames.menu import MenuFrame
 # from gui.frames.trainer import TrainerFrame
-from gui.frames.scanner import ScannerFrame
+from app_ui.frames.scanner import ScannerFrame
 
 class App(ctk.CTk):
     
@@ -66,8 +66,10 @@ class App(ctk.CTk):
 
         # Initialise frames and put into self.loaded_frames
 
-        frame = ScannerFrame(container=self.container, controller=self)
-        self.loaded_frames[ScannerFrame] = frame
+        for F in (ScannerFrame,):
+            frame = F(container=self.container, controller=self)
+            self.loaded_frames[F] = frame
+            frame.grid(row=0, column=0, sticky='nsew')
 
         for key, val in self.loaded_frames.items():
             print(key, val)
@@ -75,7 +77,7 @@ class App(ctk.CTk):
 
     
     def show_frame(self, frame_class: type[ctk.CTkFrame]):
-        '''Bring the selected frame to the front of container displaying it.'''
+        '''Bring the specified frame to the front of container, displaying it.'''
         
         frame = self.loaded_frames[frame_class]
         frame.tkraise() # Bring to front/display
@@ -90,5 +92,3 @@ class App(ctk.CTk):
 
         return clean_f_names
     
-app = App()
-app.mainloop()

@@ -15,7 +15,7 @@ class CCE(Loss):
 
     def calculate(self, probs: cp.ndarray, true_classes: cp.ndarray): # type: ignore
         '''
-        The CCE loss calculation, averaged over a batch of inputs.\n
+        The CCE loss calculation, not averaged.\n
         Updates self.outputs
         
         Keyword Args:
@@ -36,13 +36,13 @@ class CCE(Loss):
         # to get the relevant predictions for each sample in one list
         total_pred_list = cp.sum(rel_list, axis = 1) 
 
-        # Multiply the sum of all predicted values by -1/N (greater loss = worse)
+        # Multiply the sum of all predicted values by -1 (greater loss = worse)
         self.outputs = -1 * total_pred_list
 
 
     def bwd(self) -> None:
         '''
-        Calculates the derivatives of CCE Loss w.r.t inputs.
+        Calculates the derivatives of CCE Loss w.r.t inputs. Does not depend on fwding first.
         
         :param self: Description
         '''

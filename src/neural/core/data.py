@@ -4,10 +4,13 @@ import cupy as cp
 # TODO: Remake this so it is not trash
 # Also test how it handles non-perfect divisor batch sizes
 def batch_split(arr: cp.ndarray, batch_size: int) -> cp.ndarray:
-    '''Split an array into batches of size specified.'''
+    '''Split an array into batches of size specified, returning a list of sub-arrays.'''
 
-    x_batch_shape = (int(arr.shape[0]/batch_size), batch_size, 784)
-    arr_batches = cp.reshape(arr, x_batch_shape)
+    # x_train: (60_000, 784) -> (1875, 32, 784)
+    # y_train: (60_000, 10)
+
+    batch_shape = (int(arr.shape[0]/batch_size), batch_size, 784)
+    arr_batches = cp.reshape(arr, batch_shape)
 
     return arr_batches
 

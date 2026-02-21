@@ -28,7 +28,6 @@ class NetworkDense(Network):
 
         Keyword Args:
             layers -- The architecture of the network (as objects).
-            param_file -- A file which jcontains the parameters of the network.
         
         Attributes:
             layers -- A list of the layer objects.
