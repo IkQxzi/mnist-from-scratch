@@ -7,15 +7,15 @@ from neural.core.network import NetworkDense
 from neural.layers import LayerDense
 
 
-def save_params(network: NetworkDense, path: str, training_metadata: dict) -> None:
+def save_model_params(network: NetworkDense, path: str, training_metadata: dict) -> None:
     '''
     Write network parameters (layers, biases) to .npz file.\n
     The parameters are named layer{n}_{weights/biases} (0-indexed).
     
-    :param network: Network to save params from.
+    :param network: Network to save model_params from.
     :type network: NetworkDense
 
-    :param path: Name of file to save params to (not incl. extension). 
+    :param path: Name of file to save model_params to (not incl. extension). 
     :type path: str
     
     :param training_metadata: Information about how the network was trained (epochs, l_rate, etc.).
@@ -34,7 +34,7 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
                 }
     
     # Weights, biases, etc.
-    params = dict()
+    model_params = dict()
 
     # Generate layer metadata
     for i, layer in enumerate(network.layers):
@@ -51,9 +51,9 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
             w_key = f'l{i}_w'
             b_key = f'l{i}_b'
 
-            # Add weights & biases to params using unique key names
-            params[w_key] = layer.weights
-            params[b_key] = layer.biases
+            # Add weights & biases to model_params using unique key names
+            model_params[w_key] = layer.weights
+            model_params[b_key] = layer.biases
 
             keys = {'w_key': w_key, 'b_key': b_key}
 
@@ -63,11 +63,14 @@ def save_params(network: NetworkDense, path: str, training_metadata: dict) -> No
     # Keep training metadata separate from layer metadata
     metadata['training'] = training_metadata
 
+    print(metadata)
+    print(json.dumps(metadata))
+
     # Write data to singular .npz file
     cp.savez(
-            f'{path}.npz', 
-            json.dumps(metadata),
-            **params # Has to be passed in **kwargs format to be written as expected
+            file=rf'{path}.npz',
+            metadata=json.dumps(metadata), # Must be a kwarg
+            **model_params, # Has to be passed in **kwargs format to be written as expected
                 )
     
 

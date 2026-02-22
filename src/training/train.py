@@ -34,10 +34,16 @@ def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.nda
     batch_size = hyperparams['batch_size']
     for epoch in range(1, 1+hyperparams['epochs']):
         
+        # Shuffle the data for better training
+        cp.random.shuffle(x_train)
+        cp.random.shuffle(y_train)
+
         print(f'Epoch {epoch}...')
 
-        # Dynamically slice list to allow for imperfect divisor batch_size
+        # Steps through each batch
         for i in range(0, x_train.shape[0], batch_size):
+
+            # Dynamically slice list to allow for imperfect divisor batch_size
             x_batch = x_train[i : i + batch_size]
             y_batch = y_train[i : i + batch_size]
 
@@ -61,7 +67,7 @@ def test_network(network: NetworkDense, test_data: tuple[cp.ndarray, cp.ndarray]
     '''
 
     (x_test, y_test) = test_data
-    n_samples = x_test.shape[0]
+    n_samples = y_test.shape[0]
 
     loss = CCE()
     
@@ -69,15 +75,19 @@ def test_network(network: NetworkDense, test_data: tuple[cp.ndarray, cp.ndarray]
     network.fwd(x_test)
     loss.calculate(network.probs, y_test)
     
-    # Average loss over each sample
-    avg_loss = loss.outputs / n_samples
+    # Average total loss over each sample
+    avg_loss = float(cp.mean(loss.outputs))
 
-    # Get the most confident class & compare to true class for acc
-    # Then avg. over samples
-    pred_indices = cp.argmax(network.probs, axis=1)
-    cor_pred = y_test[pred_indices == 1]
-    avg_accuracy = 100 * (cor_pred.shape[0] / n_samples)
+    # Calculate accuracy 
+    pred_indices = cp.argmax(network.probs, axis=1) # Indices of highest probs
     
+    # Array of True/False where y_test and probs line up
+    bool_mask = cp.array(y_test[cp.arange(n_samples), pred_indices] == 1) 
+    n_cor_pred = int(cp.sum(bool_mask)) # Sums the True (1) and False to get a total number of correct predictions
+
+    avg_accuracy = 100 * (n_cor_pred / n_samples)
+    
+    # For debug, can put in log file later if required
     print(f'Average loss on test set: {avg_loss}')
     print(f'Average accuracy on test set: {avg_accuracy}')
 

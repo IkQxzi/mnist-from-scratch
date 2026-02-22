@@ -1,13 +1,13 @@
-from datetime import datetime
+import time
 
 from neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
 from neural.core.datasets import get_mnist_data
-from training import train_network, test_network, save_params
+from training import train_network, test_network, save_model_params
 
 def main() -> None:
 
     HYPERPARAMS = {
-        'epochs': 1,
+        'epochs': 30,
         'l_rate': 0.01,
         'w_decay': 1e-4,
         'batch_size': 32
@@ -36,10 +36,10 @@ def main() -> None:
         'avg_loss': avg_loss
     })
 
-    timestamp = datetime.now().isoformat(timespec='seconds')
+    timestamp = time.strftime('%Y-%m-%d_%H.%M')
     save_path = rf'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\new_{avg_acc}_{timestamp}'
 
-    save_params(net, save_path, training_metadata)
+    save_model_params(net, save_path, training_metadata)
 
 
 if __name__ == '__main__':

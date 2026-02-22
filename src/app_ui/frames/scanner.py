@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 # 3rd party
 import cupy as cp
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageDraw
 
 # local
 if TYPE_CHECKING:
@@ -39,6 +39,8 @@ class ScannerFrame(ctk.CTkFrame):
     _draw_tab: ctk.CTkFrame
     _draw_tab_txt_box: ctk.CTkLabel
     _canvas: ctk.CTkCanvas
+    _pil_canvas_cpy: Image.Image
+    _pil_canvas_cpy_draw: ImageDraw.ImageDraw
     _clear_btn: ctk.CTkButton
     _scan_btn_d_tab: ctk.CTkButton
 
@@ -100,6 +102,10 @@ class ScannerFrame(ctk.CTkFrame):
 
         # For user to draw on 
         self._canvas = ctk.CTkCanvas(self._draw_tab)
+
+        # We must create a ghost copy of the canvas to avoid having to work with file exports
+        self._pil_canvas_cpy = Image.new("L", (self._canvas.winfo_reqwidth(), self._canvas.winfo_reqheight()), 255) # 255 = White
+        self._pil_canvas_cpy_draw = ImageDraw.Draw(self._pil_canvas_cpy)
         
         # Moving the mouse should only draw when B1 (LMB) is held down
         self._canvas.bind('<B1-Motion>', self._canvas_draw)
@@ -185,19 +191,28 @@ class ScannerFrame(ctk.CTkFrame):
         x, y = event.x, event.y
 
         # Coords of rectangle containing brush circle
-        rect_coords = (x-self.BRUSH_SIZE/2, y+self.BRUSH_SIZE/2), \
-                      (x+self.BRUSH_SIZE/2, y-self.BRUSH_SIZE/2)
+        # Separate because PIL and tkinter reverse the order
+        x1, y1 = x-self.BRUSH_SIZE/2, y+self.BRUSH_SIZE/2
+        x2, y2 = x+self.BRUSH_SIZE/2, y-self.BRUSH_SIZE/2
 
         # Symmetrical oval is just circle
-        self._canvas.create_oval(rect_coords, fill='black')
+        self._canvas.create_oval((x1, y1), (x2, y2), fill='black')  
 
+        # Mirror the changes on the PIL copy
+        # TODO: use relative coordinatess
+        self._pil_canvas_cpy_draw.ellipse(((x1, y2), (x2, y1)), fill='black', width=5)
 
     def _on_clear_btn_click(self):
         
+        # Clear the canvas
         self._canvas.delete("all")
 
 
     def _on_d_scan_click(self):
+        '''Scan the drawing in self._canvas.'''
+
+        self._pil_canvas_cpy.show()
+
         pass
 
 
