@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 # 3rd party
 import cupy as cp
 import customtkinter as ctk
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageGrab
 
 # local
 if TYPE_CHECKING:
@@ -104,8 +104,9 @@ class ScannerFrame(ctk.CTkFrame):
         self._canvas = ctk.CTkCanvas(self._draw_tab)
 
         # We must create a ghost copy of the canvas to avoid having to work with file exports
-        self._pil_canvas_cpy = Image.new("L", (self._canvas.winfo_reqwidth(), self._canvas.winfo_reqheight()), 255) # 255 = White
-        self._pil_canvas_cpy_draw = ImageDraw.Draw(self._pil_canvas_cpy)
+        # For now, use (1, 1) size; match to canvas in layout method
+        self._pil_canvas_cpy: Image.Image
+        self._pil_canvas_cpy_draw: ImageDraw.ImageDraw # Must be instantiated last
         
         # Moving the mouse should only draw when B1 (LMB) is held down
         self._canvas.bind('<B1-Motion>', self._canvas_draw)
@@ -131,6 +132,10 @@ class ScannerFrame(ctk.CTkFrame):
         # img
         self._usr_img_lbl = ctk.CTkLabel(self._upload_tab, text="")
 
+        # Now fix size of ghost img
+        self._pil_canvas_cpy = Image.new("L", (500, 500), 255) # 255 = White
+        print(self._pil_canvas_cpy.size)
+        self._pil_canvas_cpy_draw = ImageDraw.Draw(self._pil_canvas_cpy)
 
     def _create_results_frame(self):
 
@@ -161,6 +166,9 @@ class ScannerFrame(ctk.CTkFrame):
         # Btns
         self._clear_btn.pack(fill = 'both', expand=True, padx=2.5, pady=5, side='left')
         self._scan_btn_d_tab.pack(fill = 'both', expand=True, padx=2.5, pady=5, side='right')
+
+        self._canvas.update()
+
 
 
     def _layout_upload_tab(self):
