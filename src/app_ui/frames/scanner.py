@@ -111,11 +111,11 @@ class ScannerFrame(ctk.CTkFrame):
         # Moving the mouse should only draw when B1 (LMB) is held down
         self._canvas.bind('<B1-Motion>', self._canvas_draw)
 
-        self._clear_btn = ctk.CTkButton(self._draw_tab, text="Clear Canvas", command=self._on_clear_btn_click, 
+        self._clear_btn = ctk.CTkButton(self._draw_tab, text="Clear Canvas", command=self._on_dtab_clear_click, 
                                          height=self.BTN_HEIGHT, font=self.BTN_FONT)
         
         # Uses different cmd to upload scan btn bc it must read canvas instead of img
-        self._scan_btn_d_tab = ctk.CTkButton(self._draw_tab, text="Scan Drawing", command=self._on_d_scan_click,
+        self._scan_btn_d_tab = ctk.CTkButton(self._draw_tab, text="Scan Drawing", command=self._on_dtab_scan_click,
                                              height=self.BTN_HEIGHT, font=self.BTN_FONT) 
 
 
@@ -124,9 +124,9 @@ class ScannerFrame(ctk.CTkFrame):
         self._upload_tab = self._inputs_tabs.add("Upload")
 
         # Usr buttons
-        self._upload_btn = ctk.CTkButton(self._upload_tab, text="Upload Image", command=self._on_upload_click, 
+        self._upload_btn = ctk.CTkButton(self._upload_tab, text="Upload Image", command=self._on_utab_upload_click, 
                                          height=self.BTN_HEIGHT, font=self.BTN_FONT)
-        self._scan_btn_u_tab = ctk.CTkButton(self._upload_tab, text="Scan Image", command=self._on_u_scan_click,
+        self._scan_btn_u_tab = ctk.CTkButton(self._upload_tab, text="Scan Image", command=self._on_utab_scan_click,
                                              height=self.BTN_HEIGHT, font=self.BTN_FONT)
 
         # img
@@ -208,23 +208,23 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Mirror the changes on the PIL copy
         # TODO: use relative coordinatess
-        self._pil_canvas_cpy_draw.ellipse(((x1, y2), (x2, y1)), fill='black', width=5)
+        # self._pil_canvas_cpy_draw.ellipse(((x1, y2), (x2, y1)), fill='black', width=5)
 
-    def _on_clear_btn_click(self):
+    def _on_dtab_clear_click(self):
         
         # Clear the canvas
         self._canvas.delete("all")
 
 
-    def _on_d_scan_click(self):
+    def _on_dtab_scan_click(self):
         '''Scan the drawing in self._canvas.'''
 
-        self._pil_canvas_cpy.show()
+        self._capture_canvas()
 
         pass
 
 
-    def _on_upload_click(self):
+    def _on_utab_upload_click(self):
 
         # temp for easier testing
         if ScannerFrame.SKIP_IMG_SELECT:
@@ -241,7 +241,7 @@ class ScannerFrame(ctk.CTkFrame):
         self._usr_img_lbl.configure(image=self._curr_img_ctk)
 
 
-    def _on_u_scan_click(self):
+    def _on_utab_scan_click(self):
         
         if not self._curr_img_pil:
             return
@@ -250,6 +250,19 @@ class ScannerFrame(ctk.CTkFrame):
 
         # TODO: network outputs
         self.controller.network.fwd(img_arr)
+
+
+    def _capture_canvas(self) -> Image.Image:
+        x0 = self._canvas.winfo_rootx()
+        y0 = self._canvas.winfo_rooty()
+        x1 = x0 + self._canvas.winfo_width()
+        y1 = y0 + self._canvas.winfo_height()
+
+        img = ImageGrab.grab((x0, y0, x1, y1))
+        img.show() # for debugging
+        return img
+
+
 
 
     def _conv_img_to_arr(self) -> cp.ndarray:
