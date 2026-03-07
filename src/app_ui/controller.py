@@ -1,6 +1,7 @@
 import os
 from typing import Type
 
+import cupy as cp
 import customtkinter as ctk
 
 from neural import NetworkDense
@@ -39,6 +40,42 @@ class App(ctk.CTk):
         self._load_container()
 
 
+    def show_frame(self, frame_class: type[ctk.CTkFrame]):
+        '''Bring the specified frame to the front of container, displaying it.'''
+        
+        frame = self.loaded_frames[frame_class]
+        frame.tkraise() # Bring to front/display
+
+
+    def set_network(self, net_path: str) -> dict:
+        '''
+        Set the active network to the one described by the specified file path,
+        and return the metadata about that network and its training.
+        '''
+        
+        # Load network container
+        net_cont = cp.load(file=net_path)
+        assert type(net_cont) == dict # To keep linter happy
+
+        # Change active network
+        self.network = NetworkDense.load_pretrained(net_cont)
+        
+        # Return metadata
+        return net_cont['metadata']
+    
+
+    def get_pretrained_networks(self) -> list[str]:
+        '''Get list of file names (without extension) of pretrained networks available for use.'''
+        
+        # Get file names at cls-specified directory
+        file_names = os.listdir(path=App.MODEL_DIR)
+
+        # Remove extension from filenames
+        clean_f_names = [file_name.rstrip('.npz') for file_name in file_names]
+
+        return clean_f_names
+    
+
     def _setup_window(self):
         self.title(App.WIN_TITLE)
         self.geometry(App.RESOLUTION)
@@ -76,19 +113,4 @@ class App(ctk.CTk):
             print(type(key), type(val))
 
     
-    def show_frame(self, frame_class: type[ctk.CTkFrame]):
-        '''Bring the specified frame to the front of container, displaying it.'''
-        
-        frame = self.loaded_frames[frame_class]
-        frame.tkraise() # Bring to front/display
-
-    
-    def get_pretrained_networks(self) -> list[str]:
-        '''Get list of file names (without extension) of pretrained networks available for use.'''
-        
-        file_names = os.listdir(path=App.MODEL_DIR)
-
-        clean_f_names = [file_name.rstrip('.npz') for file_name in file_names]
-
-        return clean_f_names
     

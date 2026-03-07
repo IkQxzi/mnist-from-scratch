@@ -22,8 +22,7 @@ class ScannerFrame(ctk.CTkFrame):
     BRUSH_SIZE = 50
     controller: "App"
 
-    _usr_img_pil: Image.Image
-    _usr_img_ctk: ctk.CTkImage
+    _curr_img_pil: Image.Image
     _curr_img_arr: cp.ndarray # 28x28
     _is_img_displayed: bool
 
@@ -49,6 +48,8 @@ class ScannerFrame(ctk.CTkFrame):
     _upload_btn: ctk.CTkButton
     _scan_btn_u_tab: ctk.CTkButton
     _usr_img_lbl: ctk.CTkLabel
+    _usr_img_pil: Image.Image
+    _usr_img_ctk: ctk.CTkImage
     
     # Results widgets
     _results_frame: ctk.CTkFrame
@@ -82,14 +83,31 @@ class ScannerFrame(ctk.CTkFrame):
         self._layout_upload_tab()
         self._layout_results_frame()
 
+    # -----------------------
+    # Public Methods
+    # -----------------------
+
     def reset_frame(self):
         # Remove the image and stuff
         pass
 
+    # -----------------------
+    # Creation
+    # -----------------------
 
     def _create_net_tab(self):
 
         self._net_tab = self._inputs_tabs.add("Network")
+
+        # Hint for net tab
+        self._net_hint_box = ctk.CTkLabel(self._net_tab, text="Select a network to view details.")
+
+        # Fill with values first to not have 'CTkComboBox' as the default value
+        self._net_selector = ctk.CTkComboBox(self._net_tab, values=self.controller.get_pretrained_networks())
+
+        # Combine avg acc and avg loss
+        self._perf_lbl
+        self._
 
 
     def _create_draw_tab(self):
@@ -111,11 +129,11 @@ class ScannerFrame(ctk.CTkFrame):
         # Moving the mouse should only draw when B1 (LMB) is held down
         self._canvas.bind('<B1-Motion>', self._canvas_draw)
 
-        self._clear_btn = ctk.CTkButton(self._draw_tab, text="Clear Canvas", command=self._on_dtab_clear_click, 
+        self._clear_btn = ctk.CTkButton(self._draw_tab, text="Clear Canvas", command=self._on_d_tab_clear_click, 
                                          height=self.BTN_HEIGHT, font=self.BTN_FONT)
         
         # Uses different cmd to upload scan btn bc it must read canvas instead of img
-        self._scan_btn_d_tab = ctk.CTkButton(self._draw_tab, text="Scan Drawing", command=self._on_dtab_scan_click,
+        self._scan_btn_d_tab = ctk.CTkButton(self._draw_tab, text="Scan Drawing", command=self._on_d_tab_scan_click,
                                              height=self.BTN_HEIGHT, font=self.BTN_FONT) 
 
 
@@ -124,9 +142,9 @@ class ScannerFrame(ctk.CTkFrame):
         self._upload_tab = self._inputs_tabs.add("Upload")
 
         # Usr buttons
-        self._upload_btn = ctk.CTkButton(self._upload_tab, text="Upload Image", command=self._on_utab_upload_click, 
+        self._upload_btn = ctk.CTkButton(self._upload_tab, text="Upload Image", command=self._on_u_tab_upload_click, 
                                          height=self.BTN_HEIGHT, font=self.BTN_FONT)
-        self._scan_btn_u_tab = ctk.CTkButton(self._upload_tab, text="Scan Image", command=self._on_utab_scan_click,
+        self._scan_btn_u_tab = ctk.CTkButton(self._upload_tab, text="Scan Image", command=self._on_u_tab_scan_click,
                                              height=self.BTN_HEIGHT, font=self.BTN_FONT)
 
         # img
@@ -137,6 +155,7 @@ class ScannerFrame(ctk.CTkFrame):
         print(self._pil_canvas_cpy.size)
         self._pil_canvas_cpy_draw = ImageDraw.Draw(self._pil_canvas_cpy)
 
+
     def _create_results_frame(self):
 
         # So can be stuck into right column
@@ -145,14 +164,16 @@ class ScannerFrame(ctk.CTkFrame):
         # TODO: add gpu lbl here
 
         # net outputs
-        # Fill with values first to not have 'CTkComboBox' as the default value
-        self._net_selector = ctk.CTkComboBox(self, values=self.controller.get_pretrained_networks())
         self._net_pred_lbl = ctk.CTkLabel(self, text="The network's prediction will be displayed here.")
         self._net_conf_lbl = ctk.CTkLabel(self, text="The network's confidence will be displayed here.")
 
+    # -----------------------
+    # Layout
+    # -----------------------
 
     def _layout_net_tab(self):
-        pass
+        
+        self._net_selector.pack(fill='x', padx=3.5, pady=5, side='top')
 
 
     def _layout_draw_tab(self):
@@ -168,7 +189,6 @@ class ScannerFrame(ctk.CTkFrame):
         self._scan_btn_d_tab.pack(fill = 'both', expand=True, padx=2.5, pady=5, side='right')
 
         self._canvas.update()
-
 
 
     def _layout_upload_tab(self):
@@ -191,7 +211,56 @@ class ScannerFrame(ctk.CTkFrame):
         self._net_selector.grid(row=2, column=1, padx=20, pady=20)
         self._net_pred_lbl.grid(row=3, column=1, padx=20, pady=5)
         self._net_conf_lbl.grid(row=4, column=1, padx=20, pady=5)
+    
+    # -----------------------
+    # Buttons
+    # -----------------------
 
+    def _on_d_tab_clear_click(self):
+        
+        # Clear the canvas
+        self._canvas.delete("all")
+
+
+    def _on_d_tab_scan_click(self):
+        '''Scan the drawing in self._canvas.'''
+
+        usr_draw = self._capture_canvas()
+        self._set_formatted_img(usr_draw)
+
+        self.controller.network.fwd(self._curr_img_arr)
+
+
+    def _on_u_tab_upload_click(self):
+
+        # temp for easier testing
+        if ScannerFrame.SKIP_IMG_SELECT:
+            img_path = r"C:\Users\ikram\Documents\Schoolwork\compsci\test_img.png"
+        else:
+            img_path = ctk.filedialog.askopenfilename(title="Open Image File", 
+                                          filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.ico")])
+
+        if not img_path: return
+
+        self._usr_img_pil = Image.open(img_path) 
+        self._usr_img_ctk = ctk.CTkImage(self._usr_img_pil, size=ScannerFrame.USR_IMG_SIZE)
+
+        self._usr_img_lbl.configure(image=self._usr_img_ctk)
+
+
+    def _on_u_tab_scan_click(self):
+        
+        if not self._usr_img_pil:
+            return
+
+        self._set_formatted_img(self._usr_img_pil)
+
+        # TODO: network outputs
+        self.controller.network.fwd(self._curr_img_arr)
+
+    # -----------------------
+    # Functional methods
+    # -----------------------
 
     def _canvas_draw(self, event):
 
@@ -210,50 +279,9 @@ class ScannerFrame(ctk.CTkFrame):
         # TODO: use relative coordinatess
         # self._pil_canvas_cpy_draw.ellipse(((x1, y2), (x2, y1)), fill='black', width=5)
 
-    def _on_dtab_clear_click(self):
-        
-        # Clear the canvas
-        self._canvas.delete("all")
-
-
-    def _on_dtab_scan_click(self):
-        '''Scan the drawing in self._canvas.'''
-
-        usr_draw = self._capture_canvas()
-        usr_draw = self._conv_img_to_arr()
-
-        pass
-
-
-    def _on_utab_upload_click(self):
-
-        # temp for easier testing
-        if ScannerFrame.SKIP_IMG_SELECT:
-            img_path = r"C:\Users\ikram\Documents\Schoolwork\compsci\test_img.png"
-        else:
-            img_path = ctk.filedialog.askopenfilename(title="Open Image File", 
-                                          filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.ico")])
-
-        if not img_path: return
-
-        self._usr_img_pil = Image.open(img_path) 
-        self._usr_img_ctk = ctk.CTkImage(self._usr_img_pil, size=ScannerFrame.USR_IMG_SIZE)
-
-        self._usr_img_lbl.configure(image=self._usr_img_ctk)
-
-
-    def _on_utab_scan_click(self):
-        
-        if not self._usr_img_pil:
-            return
-
-        img_arr = self._conv_img_to_arr()
-
-        # TODO: network outputs
-        self.controller.network.fwd(img_arr)
-
 
     def _capture_canvas(self) -> Image.Image:
+        '''Get and return the raw Image from canvas.'''
 
         # Get coords of each corner of canvas
         x0 = self._canvas.winfo_rootx()
@@ -261,24 +289,26 @@ class ScannerFrame(ctk.CTkFrame):
         x1 = x0 + self._canvas.winfo_width()
         y1 = y0 + self._canvas.winfo_height()
 
-        # Grab usr drawing, make it white-on-black, resize
+        # Grab usr drawing, set it as attrib
         usr_draw = ImageGrab.grab((x0, y0, x1, y1))
-        usr_draw = usr_draw.resize(size=self.controller.DIGIT_IMG_SIZE)
-        usr_draw = usr_draw.convert(mode='L')
-        usr_draw = ImageOps.invert(usr_draw)
         
         # For debugging
         usr_draw.show()
         return usr_draw
 
 
+    def _set_formatted_img(self, img: Image.Image):
+        '''
+        Resize, conv to cp arr, and invert the given PIL image.
+        Set the img and its cp arr as attributes.
+        '''
 
-    def _conv_img_to_arr(self) -> cp.ndarray:
-            
-        img_grey_resized = self._usr_img_pil.resize(self.controller.DIGIT_IMG_SIZE).convert(mode='F')
-        img_arr = cp.asarray(img_grey_resized) / 255
+        # Resize, greyscale
+        img = img.resize(size=self.controller.DIGIT_IMG_SIZE).convert(mode='L')
+        self._curr_img_pil = ImageOps.invert(img)
 
-        return img_arr
+        # Convert to cp arr (0-1)
+        self._curr_img_arr = cp.asarray(self._curr_img_arr) / 255
 
 
 

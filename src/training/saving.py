@@ -22,6 +22,7 @@ def save_model_params(network: NetworkDense, path: str, training_metadata: dict)
     :type training_metadata: dict
 
     container/.npz file:
+        w_key/b_key: cp.ndarray
         metadata: dict(layers: list, training: dict), 
         layers: list(cls_name: str, kwargs: dict | None, keys: dict)
             keys: dict(w_key, b_key)

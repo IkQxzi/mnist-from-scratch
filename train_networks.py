@@ -8,8 +8,8 @@ def main() -> None:
 
     HYPERPARAMS = {
         'epochs': 30,
-        'l_rate': 0.01,
-        'w_decay': 1e-4,
+        'learning_rate': 0.01,
+        'weight_decay': 1e-4,
         'batch_size': 32
     }
 
