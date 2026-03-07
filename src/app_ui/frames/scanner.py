@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 # 3rd party
 import cupy as cp
 import customtkinter as ctk
-from PIL import Image, ImageDraw, ImageGrab
+from PIL import Image, ImageDraw, ImageGrab, ImageOps
 
 # local
 if TYPE_CHECKING:
@@ -22,8 +22,8 @@ class ScannerFrame(ctk.CTkFrame):
     BRUSH_SIZE = 50
     controller: "App"
 
-    _curr_img_pil: Image.Image
-    _curr_img_ctk: ctk.CTkImage
+    _usr_img_pil: Image.Image
+    _usr_img_ctk: ctk.CTkImage
     _curr_img_arr: cp.ndarray # 28x28
     _is_img_displayed: bool
 
@@ -219,7 +219,8 @@ class ScannerFrame(ctk.CTkFrame):
     def _on_dtab_scan_click(self):
         '''Scan the drawing in self._canvas.'''
 
-        self._capture_canvas()
+        usr_draw = self._capture_canvas()
+        usr_draw = self._conv_img_to_arr()
 
         pass
 
@@ -235,15 +236,15 @@ class ScannerFrame(ctk.CTkFrame):
 
         if not img_path: return
 
-        self._curr_img_pil =  Image.open(img_path) 
-        self._curr_img_ctk = ctk.CTkImage(self._curr_img_pil, size=ScannerFrame.USR_IMG_SIZE)
+        self._usr_img_pil = Image.open(img_path) 
+        self._usr_img_ctk = ctk.CTkImage(self._usr_img_pil, size=ScannerFrame.USR_IMG_SIZE)
 
-        self._usr_img_lbl.configure(image=self._curr_img_ctk)
+        self._usr_img_lbl.configure(image=self._usr_img_ctk)
 
 
     def _on_utab_scan_click(self):
         
-        if not self._curr_img_pil:
+        if not self._usr_img_pil:
             return
 
         img_arr = self._conv_img_to_arr()
@@ -253,21 +254,28 @@ class ScannerFrame(ctk.CTkFrame):
 
 
     def _capture_canvas(self) -> Image.Image:
+
+        # Get coords of each corner of canvas
         x0 = self._canvas.winfo_rootx()
         y0 = self._canvas.winfo_rooty()
         x1 = x0 + self._canvas.winfo_width()
         y1 = y0 + self._canvas.winfo_height()
 
-        img = ImageGrab.grab((x0, y0, x1, y1))
-        img.show() # for debugging
-        return img
-
+        # Grab usr drawing, make it white-on-black, resize
+        usr_draw = ImageGrab.grab((x0, y0, x1, y1))
+        usr_draw = usr_draw.resize(size=self.controller.DIGIT_IMG_SIZE)
+        usr_draw = usr_draw.convert(mode='L')
+        usr_draw = ImageOps.invert(usr_draw)
+        
+        # For debugging
+        usr_draw.show()
+        return usr_draw
 
 
 
     def _conv_img_to_arr(self) -> cp.ndarray:
             
-        img_grey_resized = self._curr_img_pil.resize(self.controller.DIGIT_IMG_SIZE).convert(mode='F')
+        img_grey_resized = self._usr_img_pil.resize(self.controller.DIGIT_IMG_SIZE).convert(mode='F')
         img_arr = cp.asarray(img_grey_resized) / 255
 
         return img_arr
