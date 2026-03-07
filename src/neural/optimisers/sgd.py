@@ -24,8 +24,8 @@ class SGD(Optimiser):
         self.network = network
 
         # To keep network params float32
-        self.l_rate = cp.float32(learning_rate)
-        self.w_decay = cp.float32(weight_decay)
+        self.learning_rate = cp.float32(learning_rate)
+        self.weight_decay = cp.float32(weight_decay)
 
 
     def update_params(self) -> None:
@@ -35,14 +35,14 @@ class SGD(Optimiser):
             if layer.__class__.__name__ == 'LayerDense':
 
                 # Gradient of total loss w.r.t weights due to CCE Loss
-                w_cce_grad = layer.weight_dvals * self.l_rate
+                w_cce_grad = layer.weight_dvals * self.learning_rate
 
                 # Weights decayed due to learning rate and decay rate
-                w_decayed = layer.weights * (1 - 2 * self.l_rate * self.w_decay)
+                weight_decayed = layer.weights * (1 - 2 * self.learning_rate * self.weight_decay)
 
                 # Update using L2 Regularisation
-                layer.weights = w_decayed - w_cce_grad
+                layer.weights = weight_decayed - w_cce_grad
 
                 # L2 has no effect on biases
-                layer.biases -= (layer.bias_dvals * self.l_rate)
+                layer.biases -= (layer.bias_dvals * self.learning_rate)
 

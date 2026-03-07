@@ -19,7 +19,7 @@ def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.nda
     Keyword Args:
         :param network: Network to be trained.
         :param training_data: Data to train network on.
-        :param hyperparams: Hyperparam dict containing epochs, l_rate, w_decay, batch_size.
+        :param hyperparams: Hyperparam dict containing epochs, learning_rate, weight_decay, batch_size.
 
     Returns:
         Trained network.
@@ -27,7 +27,7 @@ def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.nda
     '''
 
     loss = CCE()
-    optimiser = SGD(network, hyperparams['l_rate'], hyperparams['w_decay'])
+    optimiser = SGD(network, hyperparams['learning_rate'], hyperparams['weight_decay'])
     
     (x_train, y_train) = training_data
 

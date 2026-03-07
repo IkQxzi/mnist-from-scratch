@@ -15,13 +15,14 @@ def save_model_params(network: NetworkDense, path: str, training_metadata: dict)
     :param network: Network to save model_params from.
     :type network: NetworkDense
 
-    :param path: Name of file to save model_params to (not incl. extension). 
+    :param path: Name of file to save model_params to (incl. extension). 
     :type path: str
     
-    :param training_metadata: Information about how the network was trained (epochs, l_rate, etc.).
+    :param training_metadata: Information about how the network was trained (epochs, learning_rate, etc.).
     :type training_metadata: dict
 
     container/.npz file:
+        name: str
         w_key/b_key: cp.ndarray
         metadata: dict(layers: list, training: dict), 
         layers: list(cls_name: str, kwargs: dict | None, keys: dict)
@@ -69,7 +70,7 @@ def save_model_params(network: NetworkDense, path: str, training_metadata: dict)
 
     # Write data to singular .npz file
     cp.savez(
-            file=rf'{path}.npz',
+            file=path,
             metadata=json.dumps(metadata), # Must be a kwarg
             **model_params, # Has to be passed in **kwargs format to be written as expected
                 )

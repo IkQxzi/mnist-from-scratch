@@ -32,7 +32,7 @@ class ScannerFrame(ctk.CTkFrame):
     
     # Network tab widgets
     _net_tab: ctk.CTkFrame
-    _net_selector: ctk.CTkComboBox
+    _net_dropdown: ctk.CTkComboBox
     
     # Draw tab widgets
     _draw_tab: ctk.CTkFrame
@@ -99,15 +99,23 @@ class ScannerFrame(ctk.CTkFrame):
 
         self._net_tab = self._inputs_tabs.add("Network")
 
-        # Hint for net tab
-        self._net_hint_box = ctk.CTkLabel(self._net_tab, text="Select a network to view details.")
+        # Title for net selection
+        self._net_select_title = ctk.CTkLabel(self._net_tab, text="Network Selection")
 
+        # List of available networks 
         # Fill with values first to not have 'CTkComboBox' as the default value
-        self._net_selector = ctk.CTkComboBox(self._net_tab, values=self.controller.get_pretrained_networks())
+        self._net_dropdown = ctk.CTkComboBox(self._net_tab, values=self.controller.get_pretrained_networks())
+        
+        # Confirmation button so that the user can look through networks without loading each one
+        self._net_select_btn = ctk.CTkButton(self._net_tab, text="Select Network", command=self._on_select_net_btn_click)
 
-        # Combine avg acc and avg loss
-        self._perf_lbl
-        self._
+        # Name, acc of active network (by default none selected)
+        self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="None")
+        self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="None")
+        
+        # Name, acc of selected network
+        self._selected_net_name_lbl = ctk.CTkLabel(self._net_tab, text="None")
+        self._selected_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="None")
 
 
     def _create_draw_tab(self):
@@ -173,7 +181,7 @@ class ScannerFrame(ctk.CTkFrame):
 
     def _layout_net_tab(self):
         
-        self._net_selector.pack(fill='x', padx=3.5, pady=5, side='top')
+        self._net_dropdown.pack(fill='x', padx=3.5, pady=5, side='top')
 
 
     def _layout_draw_tab(self):
@@ -208,13 +216,23 @@ class ScannerFrame(ctk.CTkFrame):
         self._results_frame.grid(row=0, column=1, padx=20, pady=20, sticky='nesw')
 
         # net outputs
-        self._net_selector.grid(row=2, column=1, padx=20, pady=20)
+        self._net_dropdown.grid(row=2, column=1, padx=20, pady=20)
         self._net_pred_lbl.grid(row=3, column=1, padx=20, pady=5)
         self._net_conf_lbl.grid(row=4, column=1, padx=20, pady=5)
     
     # -----------------------
     # Buttons
     # -----------------------
+
+    def _on_select_net_btn_click(self) -> None:
+        '''Change the active network to the one in self._net_dropdown.'''
+
+        # Get the currently selected network in dropdown
+        net_name = self._net_dropdown.get()
+        
+        # Set as active network
+        self.controller.set_network(net_name)
+
 
     def _on_d_tab_clear_click(self):
         

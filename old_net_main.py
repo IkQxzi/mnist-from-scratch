@@ -20,7 +20,7 @@ from tools.debugging import debug_style, warning_style
 
 
 
-def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_size: int) -> tuple[NetworkDense, float]:
+def epoch_train_test(learning_rate: float, epochs: int, weight_decay: float, batch_size: int) -> tuple[NetworkDense, float]:
 
     # For readability
     np.set_printoptions(suppress=True, precision=3)
@@ -29,7 +29,7 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
     net_neurons = [784, 128, 10]
     batch_size = batch_size
     learning_rate = learning_rate
-    w_decay = w_decay # Halfed because not using traditional L2
+    weight_decay = weight_decay # Halfed because not using traditional L2
     epochs = epochs
 
     layers = [
@@ -43,7 +43,7 @@ def epoch_train_test(learning_rate: float, epochs: int, w_decay: float, batch_si
 
     net = NetworkDense(layers)
     loss = CCE()
-    optimiser = SGD(net, learning_rate, w_decay)
+    optimiser = SGD(net, learning_rate, weight_decay)
 
     (x_train_batches, y_train_batches), (x_test, y_test) = get_mnist_batches(batch_size)
 
@@ -111,9 +111,9 @@ def net_test(network: NetworkDense, x_test: np.ndarray, y_test: np.ndarray) -> f
 def main() -> None:
 
     # Promising rates to test
-    l_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
+    learning_rates = [0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
     epochs = 1000
-    w_decay = 0
+    weight_decay = 0
     batch_size = 1000
     logpath = 'logs//gpu_best_networks.csv'
     logging = False
@@ -124,12 +124,12 @@ def main() -> None:
     while True:
         best = False
         counter +=1
-        i = counter % len(l_rates) # To make it cycle learning rates
+        i = counter % len(learning_rates) # To make it cycle learning rates
 
-        l_rate = l_rates[i]
+        learning_rate = learning_rates[i]
 
         start_time = time.time()
-        net, cur_acc = epoch_train_test(l_rate, epochs=epochs, w_decay=w_decay, batch_size=batch_size)
+        net, cur_acc = epoch_train_test(learning_rate, epochs=epochs, weight_decay=weight_decay, batch_size=batch_size)
         time_elapsed = time.time() - start_time
 
         # We want highest accuracy network only
@@ -138,13 +138,13 @@ def main() -> None:
             best = True
             best_acc = cur_acc
 
-            save_params(network=net, path=f'logs//layer_params_{cur_acc:.2f}_{l_rate}')
+            save_params(network=net, path=f'logs//layer_params_{cur_acc:.2f}_{learning_rate}')
 
         # Write training results to file
         if logging:
             log_training_csv(
-                path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, l_rate=l_rate, 
-                w_decay=w_decay, acc=cur_acc, best=best
+                path=logpath, time_taken=time_elapsed, batch_size=batch_size, epochs=epochs, learning_rate=learning_rate, 
+                weight_decay=weight_decay, acc=cur_acc, best=best
                             )
             
         exit()

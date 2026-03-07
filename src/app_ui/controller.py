@@ -22,6 +22,8 @@ class App(ctk.CTk):
     container: ctk.CTkFrame
     loaded_frames: dict[type[ctk.CTkFrame], ctk.CTkFrame]
     network: NetworkDense
+    network_name: str
+
 
     def __init__(self):
         '''
@@ -47,33 +49,43 @@ class App(ctk.CTk):
         frame.tkraise() # Bring to front/display
 
 
-    def set_network(self, net_path: str) -> dict:
+    def set_network(self, net_name: str) -> dict:
         '''
         Set the active network to the one described by the specified file path,
         and return the metadata about that network and its training.
         '''
         
         # Load network container
-        net_cont = cp.load(file=net_path)
+        net_cont = cp.load(file=rf'{App.MODEL_DIR}\net_name.npz')
         assert type(net_cont) == dict # To keep linter happy
 
         # Change active network
         self.network = NetworkDense.load_pretrained(net_cont)
+        self.network_name = net_cont['name']
         
         # Return metadata
         return net_cont['metadata']
     
 
-    def get_pretrained_networks(self) -> list[str]:
-        '''Get list of file names (without extension) of pretrained networks available for use.'''
+    def get_pretrained_networks(self) -> dict[str, str]:
+        '''Get dict of extensionless file names, net names, net accuracies, timestamps of trained networks.'''
         
-        # Get file names at cls-specified directory
-        file_names = os.listdir(path=App.MODEL_DIR)
+        networks = {
+            # Get file names at cls-specified directory
+            'f_names': os.listdir(path=App.MODEL_DIR),
+            'net_names' : [],
+            'net_accs': [],
+            'timestamps': [],
+        }
 
-        # Remove extension from filenames
-        clean_f_names = [file_name.rstrip('.npz') for file_name in file_names]
+        for f_name in networks['f_names']:
+            f_name_split = f_name.split('_')
 
-        return clean_f_names
+            networks['net_names'].append(f_name_split[0])
+            networks['net_accs'].append(f_name_split[1])
+            networks['timestamps'].append(f_name_split[2])
+
+        return networks
     
 
     def _setup_window(self):

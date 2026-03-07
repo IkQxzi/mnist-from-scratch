@@ -1,4 +1,4 @@
-timestamp,time_elapsed,batch_size,epochs,learning_rate,w_decay,accuracy,best
+timestamp,time_elapsed,batch_size,epochs,learning_rate,weight_decay,accuracy,best
 2026-01-01T00:55:39,178.94045758247375,32,30,0.01,0,94.78,True
 2026-01-01T01:13:47,89.95721197128296,60,30,0.01,0,94.45,False
 2026-01-01T01:15:05,77.80972290039062,60,30,0.01,0,94.67999999999999,False

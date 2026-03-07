@@ -7,6 +7,7 @@ from training import train_network, test_network, save_model_params
 def main() -> None:
 
     HYPERPARAMS = {
+        'name': f"ikqnet{time.strftime('%Y-%m-%d_%H.%M')}",
         'epochs': 30,
         'learning_rate': 0.01,
         'weight_decay': 1e-4,
@@ -37,7 +38,7 @@ def main() -> None:
     })
 
     timestamp = time.strftime('%Y-%m-%d_%H.%M')
-    save_path = rf'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\new_{avg_acc}_{timestamp}'
+    save_path = rf"C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\{HYPERPARAMS['name']}_{avg_acc}_T{timestamp}.npz"
 
     save_model_params(net, save_path, training_metadata)
 

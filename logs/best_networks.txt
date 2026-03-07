@@ -84,11 +84,11 @@
 [10:26:20], learning rate: 0.01, accuracy: 94.75, best: False
 [10:35:20], learning rate: 0.005, accuracy: 94.73, best: False
 [10:44:13], learning rate: 0.006, accuracy: 94.81, best: False
-[21:30:51], learning rate: 0.005, w_decay: 0, accuracy: 94.73, best: True
-[21:39:29], learning rate: 0.006, w_decay: 0, accuracy: 94.90, best: True
-[21:48:05], learning rate: 0.007, w_decay: 0, accuracy: 94.88, best: False
-[21:56:45], learning rate: 0.008, w_decay: 0, accuracy: 94.91, best: True
-[22:06:07], learning rate: 0.009, w_decay: 0, accuracy: 95.18, best: True
-[22:15:17], learning rate: 0.01, w_decay: 0, accuracy: 94.67, best: False
-[22:24:12], learning rate: 0.005, w_decay: 0, accuracy: 94.62, best: False
-[22:32:19], learning rate: 0.006, w_decay: 0, accuracy: 94.66, best: False
+[21:30:51], learning rate: 0.005, weight_decay: 0, accuracy: 94.73, best: True
+[21:39:29], learning rate: 0.006, weight_decay: 0, accuracy: 94.90, best: True
+[21:48:05], learning rate: 0.007, weight_decay: 0, accuracy: 94.88, best: False
+[21:56:45], learning rate: 0.008, weight_decay: 0, accuracy: 94.91, best: True
+[22:06:07], learning rate: 0.009, weight_decay: 0, accuracy: 95.18, best: True
+[22:15:17], learning rate: 0.01, weight_decay: 0, accuracy: 94.67, best: False
+[22:24:12], learning rate: 0.005, weight_decay: 0, accuracy: 94.62, best: False
+[22:32:19], learning rate: 0.006, weight_decay: 0, accuracy: 94.66, best: False

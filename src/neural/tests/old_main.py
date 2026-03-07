@@ -71,7 +71,7 @@ def toy_test() -> None:
     n_neurons = 64
     n_batches = 2
     learning_rate = 0.2
-    w_decay = 0.1
+    weight_decay = 0.1
     epochs = 1000
 
     layers = [
@@ -107,7 +107,7 @@ def toy_test() -> None:
 
         network.bwd(loss_dvals=loss.input_dvals, true_classes=cor_outputs)
 
-        sgd = SGD(learning_rate=learning_rate, network=network, weight_decay=w_decay)
+        sgd = SGD(learning_rate=learning_rate, network=network, weight_decay=weight_decay)
         sgd.update_params()
 
 
@@ -147,7 +147,7 @@ def net_train_test() -> float:
     n_neurons = 64
     batch_size = 32
     learning_rate = 0.001
-    w_decay = 0.1 # Halfed because not using traditional L2
+    weight_decay = 0.1 # Halfed because not using traditional L2
     epochs = 1875
 
     layers = [
@@ -166,7 +166,7 @@ def net_train_test() -> float:
 
     loss = CCE()
     optimiser = SGD(learning_rate=learning_rate, 
-                                            network=network, weight_decay=w_decay)
+                                            network=network, weight_decay=weight_decay)
 
     print('Training on 60,000 MNIST... [batch size: 32]')
     for epoch in range(epochs):
