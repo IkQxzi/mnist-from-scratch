@@ -33,6 +33,12 @@ class ScannerFrame(ctk.CTkFrame):
     # Network tab widgets
     _net_tab: ctk.CTkFrame
     _net_dropdown: ctk.CTkComboBox
+    _net_select_title: ctk.CTkLabel
+    _net_select_btn: ctk.CTkButton
+    _active_net_name_lbl: ctk.CTkLabel
+    _active_net_acc_lbl: ctk.CTkLabel
+    _selected_net_name_lbl: ctk.CTkLabel
+    _selected_net_acc_lbl: ctk.CTkLabel
     
     # Draw tab widgets
     _draw_tab: ctk.CTkFrame

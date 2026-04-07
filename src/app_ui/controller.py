@@ -22,7 +22,7 @@ class App(ctk.CTk):
     container: ctk.CTkFrame
     loaded_frames: dict[type[ctk.CTkFrame], ctk.CTkFrame]
     network: NetworkDense
-    network_name: str
+    net_info: dict
 
 
     def __init__(self):
@@ -49,19 +49,23 @@ class App(ctk.CTk):
         frame.tkraise() # Bring to front/display
 
 
-    def set_network(self, net_name: str) -> dict:
+    def set_network(self, net_fname: str) -> dict:
         '''
-        Set the active network to the one described by the specified file path,
+        Set the active network to the one described by the specified file name,
         and return the metadata about that network and its training.
         '''
         
         # Load network container
-        net_cont = cp.load(file=rf'{App.MODEL_DIR}\net_name.npz')
+        net_cont = cp.load(file=rf'{App.MODEL_DIR}\{net_fname}')
         assert type(net_cont) == dict # To keep linter happy
 
         # Change active network
         self.network = NetworkDense.load_pretrained(net_cont)
-        self.network_name = net_cont['name']
+        self.net_info = {
+            'f_name': net_fname,
+            'net_name': net_cont['name'],
+            'net_acc': net_cont['']
+        }
         
         # Return metadata
         return net_cont['metadata']
@@ -70,7 +74,7 @@ class App(ctk.CTk):
     def get_pretrained_networks(self) -> dict[str, str]:
         '''Get dict of extensionless file names, net names, net accuracies, timestamps of trained networks.'''
         
-        networks = {
+        net_info = {
             # Get file names at cls-specified directory
             'f_names': os.listdir(path=App.MODEL_DIR),
             'net_names' : [],
@@ -78,14 +82,18 @@ class App(ctk.CTk):
             'timestamps': [],
         }
 
-        for f_name in networks['f_names']:
+        for f_name in net_info['f_names']:
+            print(f'FILE NAME: {f_name}')
+
+            # Separator has to mirror what is in train/train_networks.py
+            # Underscores are fine because ISO8601 uses T as separator instead of _
             f_name_split = f_name.split('_')
 
-            networks['net_names'].append(f_name_split[0])
-            networks['net_accs'].append(f_name_split[1])
-            networks['timestamps'].append(f_name_split[2])
+            net_info['net_names'].append(f_name_split[0])
+            net_info['net_accs'].append(f_name_split[1])
+            net_info['timestamps'].append(f_name_split[2])
 
-        return networks
+        return net_info
     
 
     def _setup_window(self):
