@@ -37,8 +37,9 @@ def main() -> None:
         'avg_loss': avg_loss
     })
 
-    timestamp = datetime.now().isoformat(timespec='seconds')
-    save_path = rf"C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\{HYPERPARAMS['name']}_{avg_acc}_{timestamp}.npz"
+    # Replace colons in timestamp with dots to prevent errors with Windows file mgmt.
+    timestamp = (datetime.now().isoformat(timespec='seconds')).replace(':', '.')
+    save_path = rf"C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\{HYPERPARAMS['name']}_{avg_acc}_{avg_loss}_{len(net.layers)}_{timestamp}.npz"
 
     save_model_params(net, save_path, training_metadata)
 

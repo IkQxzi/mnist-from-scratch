@@ -12,20 +12,23 @@ from app_ui.frames.scanner import ScannerFrame
 
 class App(ctk.CTk):
     
+    # Constants
     WIN_TITLE = "Handwritten Digit Recogniser Thingy"
     RESOLUTION = '1920x1080'
-    PRIMARY_BTN_COLOUR = '#1F6AA5'
-    LBL_CORNER_RADIUS = 10
-
     UPDATE_INTERVAL = 1000 # ms
     MODEL_DIR = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
-    
     DIGIT_IMG_SIZE = (28, 28)
 
+    PRIMARY_BTN_COLOUR = '#1F6AA5'
+    PRIMARY_LBL_COLOUR = '#304674'
+    LBL_CORNER_RADIUS = 10
+    
+    # To be used by the frames
     container: ctk.CTkFrame
     loaded_frames: dict[type[ctk.CTkFrame], ctk.CTkFrame]
     network: NetworkDense
-    net_info: dict
+    active_net_info: dict[str, str | int]
+    net_infos: dict[str, list[str]]
 
 
     def __init__(self):
@@ -37,12 +40,16 @@ class App(ctk.CTk):
         '''
         
         super().__init__()
-
-        # TODO: load a default network
-        # self.network = None
+        print('Updating net infos...')
 
         self._setup_window()
-        self._load_container()
+        
+        # Update network infos for frames to use
+        # Note that this must be done before loading the container
+        self.update_net_infos() 
+        
+        # Contains frames
+        self._load_container() 
 
 
     def show_frame(self, frame_class: type[ctk.CTkFrame]):
@@ -63,10 +70,9 @@ class App(ctk.CTk):
 
         # Get the file name of network from just the name itself
         # Raise error if file not found
-        pretrained_nets_info = self.get_pretrained_networks()
-        for i, pre_net_name in enumerate(pretrained_nets_info['net_names']):
+        for i, pre_net_name in enumerate(self.net_infos['net_names']):
             if pre_net_name == net_name:
-                net_fname = pretrained_nets_info['net_fnames'][i]
+                net_fname = self.net_infos['net_fnames'][i]
             else:
                 raise FileNotFoundError()
 
@@ -79,41 +85,52 @@ class App(ctk.CTk):
         
         # Save active network info as controller attributes so all frames can access it
         # Mirrors structure in train/train_networks.py
-        self.net_info = {
+        self.active_net_info = {
             'f_name': net_fname,
-            'net_name': net_cont['name'],
-            'net_acc': net_cont['avg_acc'],
+            'name': net_cont['name'],
+            'avg_acc': net_cont['avg_acc'],
             'avg_loss': net_cont['avg_loss'],
-            'layers': net_cont['layers']
+            'size': len(net_cont['layers'])
         }
         
         # Return metadata
         return net_cont['metadata']
     
 
-    def get_pretrained_networks(self) -> dict[str, list[str]]:
-        '''Get dict of extensionless file names, net names, net accuracies, timestamps of trained networks.'''
+    def update_net_infos(self) -> None:
+        '''Update the dict of network infos in self.'''
+
+        self.net_infos = self._get_pretrained_networks()
+
+    def _get_pretrained_networks(self) -> dict[str, list[str]]:
+        '''Get dict of extensionless file names, net names, net accuracies, net losses, 
+        sizes, timestamps of trained networks.'''
         
-        net_info = {
+        net_infos = {
             # Get file names at cls-specified directory
-            'f_names': os.listdir(path=App.MODEL_DIR),
+            'net_fnames': os.listdir(path=App.MODEL_DIR),
             'net_names' : [],
             'net_accs': [],
+            'net_losses': [],
+            'net_sizes': [],
             'timestamps': [],
         }
 
-        for f_name in net_info['f_names']:
+        for f_name in net_infos['net_fnames']:
             print(f'FILE NAME: {f_name}')
 
             # Separator has to mirror what is in train/train_networks.py
             # Underscores are fine because ISO8601 uses T as separator instead of _
             f_name_split = f_name.split('_')
 
-            net_info['net_names'].append(f_name_split[0])
-            net_info['net_accs'].append(f_name_split[1])
-            net_info['timestamps'].append(f_name_split[2])
+            # Update net infos dict from parts of the filename
+            net_infos['net_names'].append(f_name_split[0])
+            net_infos['net_accs'].append(f_name_split[1])
+            net_infos['net_sizes'].append(f_name_split[2])
+            net_infos['net_losses'].append(f_name_split[3])
+            net_infos['timestamps'].append(f_name_split[4])
 
-        return net_info
+        return net_infos
     
 
     def _setup_window(self):
