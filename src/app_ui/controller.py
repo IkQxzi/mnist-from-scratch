@@ -14,6 +14,9 @@ class App(ctk.CTk):
     
     WIN_TITLE = "Handwritten Digit Recogniser Thingy"
     RESOLUTION = '1920x1080'
+    PRIMARY_BTN_COLOUR = '#1F6AA5'
+    LBL_CORNER_RADIUS = 10
+
     UPDATE_INTERVAL = 1000 # ms
     MODEL_DIR = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
     
@@ -49,29 +52,46 @@ class App(ctk.CTk):
         frame.tkraise() # Bring to front/display
 
 
-    def set_network(self, net_fname: str) -> dict:
+    def set_network(self, net_name: str) -> dict:
         '''
-        Set the active network to the one described by the specified file name,
+        Set the active network to the one described by the specified network name,
         and return the metadata about that network and its training.
         '''
         
+        # To keep linter happy
+        net_fname = ''
+
+        # Get the file name of network from just the name itself
+        # Raise error if file not found
+        pretrained_nets_info = self.get_pretrained_networks()
+        for i, pre_net_name in enumerate(pretrained_nets_info['net_names']):
+            if pre_net_name == net_name:
+                net_fname = pretrained_nets_info['net_fnames'][i]
+            else:
+                raise FileNotFoundError()
+
         # Load network container
         net_cont = cp.load(file=rf'{App.MODEL_DIR}\{net_fname}')
         assert type(net_cont) == dict # To keep linter happy
 
         # Change active network
         self.network = NetworkDense.load_pretrained(net_cont)
+        
+        # Save active network info as controller attributes so all frames can access it
+        # Mirrors structure in train/train_networks.py
         self.net_info = {
             'f_name': net_fname,
             'net_name': net_cont['name'],
-            'net_acc': net_cont['']
+            'net_acc': net_cont['avg_acc'],
+            'avg_loss': net_cont['avg_loss'],
+            'layers': net_cont['layers']
         }
         
         # Return metadata
         return net_cont['metadata']
     
 
-    def get_pretrained_networks(self) -> dict[str, str]:
+    def get_pretrained_networks(self) -> dict[str, list[str]]:
         '''Get dict of extensionless file names, net names, net accuracies, timestamps of trained networks.'''
         
         net_info = {

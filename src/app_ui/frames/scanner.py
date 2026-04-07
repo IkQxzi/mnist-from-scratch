@@ -34,6 +34,8 @@ class ScannerFrame(ctk.CTkFrame):
     _net_tab: ctk.CTkFrame
     _net_dropdown: ctk.CTkComboBox
     _net_select_title: ctk.CTkLabel
+    _net_metric_height: int = 50
+    _net_metric_width: int = 50
     _net_select_btn: ctk.CTkButton
     _active_net_name_lbl: ctk.CTkLabel
     _active_net_acc_lbl: ctk.CTkLabel
@@ -71,7 +73,7 @@ class ScannerFrame(ctk.CTkFrame):
 
         self.controller = controller
 
-        # Split the frame into two equal columns & 1 row
+        # Split the frame into jtwo equal columns & 1 row
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -103,25 +105,57 @@ class ScannerFrame(ctk.CTkFrame):
 
     def _create_net_tab(self):
 
+        # Add net tab to the tab list
         self._net_tab = self._inputs_tabs.add("Network")
 
-        # Title for net selection
-        self._net_select_title = ctk.CTkLabel(self._net_tab, text="Network Selection")
+        # Name of active network (by default none selected)
+        self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_name_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        # Metrics of active network 
+        self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_acc_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        self._active_net_loss_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_loss_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        self._active_net_size_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_size_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        # To separate active nektwork section from network selection
+        self._net_select_title_lbl = ctk.CTkLabel(self._net_tab, text='Available Networks',
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
 
         # List of available networks 
-        # Fill with values first to not have 'CTkComboBox' as the default value
-        self._net_dropdown = ctk.CTkComboBox(self._net_tab, values=self.controller.get_pretrained_networks())
+        # Fill with valuesk first to not have 'CTkComboBox' as the default value
+        # Contains name of selected network at the top
+        net_infos = self.controller.get_pretrained_networks()
+        net_names = net_infos['net_names']
+        self._net_dropdown = ctk.CTkComboBox(self._net_tab, values=net_names)
+
+        # Metrics of selected network
+        self._selected_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="_selected_net_acc_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        self._selected_net_loss_lbl = ctk.CTkLabel(self._net_tab, text="_selected_net_loss_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
+        
+        self._selected_net_size_lbl = ctk.CTkLabel(self._net_tab, text="_selected_net_size_lbl",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
         
         # Confirmation button so that the user can look through networks without loading each one
-        self._net_select_btn = ctk.CTkButton(self._net_tab, text="Select Network", command=self._on_select_net_btn_click)
-
-        # Name, acc of active network (by default none selected)
-        self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="None")
-        self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="None")
-        
-        # Name, acc of selected network
-        self._selected_net_name_lbl = ctk.CTkLabel(self._net_tab, text="None")
-        self._selected_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="None")
+        self._net_select_btn = ctk.CTkButton(self._net_tab, text="Select Network", command=self._on_net_select_btn_click)
+        self._net_selected_popup_lbl = ctk.CTkLabel(self._net_tab, text="Network selected!",
+                                                 fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                                 corner_radius=self.controller.LBL_CORNER_RADIUS)
 
 
     def _create_draw_tab(self):
@@ -130,7 +164,7 @@ class ScannerFrame(ctk.CTkFrame):
         self._draw_tab = self._inputs_tabs.add("Draw")
 
         self._draw_tab_txt_box = ctk.CTkLabel(self._draw_tab, text="Try to fill the canvas as much as possible for the best network predictions.",
-                                             height=self.SMALL_BTN_HEIGHT, font=self.SMALL_BTN_FONT, corner_radius=15, bg_color='#1F6AA5',) 
+                                             height=self.SMALL_BTN_HEIGHT, font=self.SMALL_BTN_FONT, corner_radius=self.controller.LBL_CORNER_RADIUS, fg_color=self.controller.PRIMARY_BTN_COLOUR,) 
 
         # For user to draw on 
         self._canvas = ctk.CTkCanvas(self._draw_tab)
@@ -186,8 +220,45 @@ class ScannerFrame(ctk.CTkFrame):
     # -----------------------
 
     def _layout_net_tab(self):
+
+        # Local constants
+        COLUMN_COUNT = 2
+        ROW_COUNT = 7
+
+        # Force the number of columns specified
+        for i in range(COLUMN_COUNT):
+            self._net_tab.grid_columnconfigure(index=i, weight=1)
         
-        self._net_dropdown.pack(fill='x', padx=3.5, pady=5, side='top')
+        # Force the number of rows specified
+        for i in range(ROW_COUNT):
+            self._net_tab.grid_rowconfigure(index=i, weight=1)
+
+        
+        # Place active net name top left
+        # And span vertically its space
+        self._active_net_name_lbl.grid(row=0, column=0, padx=15, pady=15,
+                                       sticky='ns')
+        
+        # Vertically stack active net metrics on the right side
+        self._active_net_acc_lbl.grid(row=0, column=1, padx=5, pady=5)
+        self._active_net_loss_lbl.grid(row=1, column=1, padx=5, pady=5)
+        self._active_net_size_lbl.grid(row=2, column=1, padx=5, pady=5)
+
+        # Place network selection title in the section below active network info
+        # And make it span the entire tabk
+        self._net_select_title_lbl.grid(row=3, sticky='ew', columnspan=2)
+
+        # Place net dropdown bottom left 
+        self._net_dropdown.grid(row=4, column=0, padx=5, pady=5)
+
+        # PLace selected net metrics bottom right
+        self._selected_net_acc_lbl.grid(row=4, column=1, padx=5, pady=5)
+        self._selected_net_loss_lbl.grid(row=5, column=1, padx=5, pady=5)
+        self._selected_net_size_lbl.grid(row=6, column=1, padx=5, pady=5)
+
+        # Place network selection button bottom middle
+        self._net_select_btn.grid(row=7, padx=5, pady=5, sticky='ew', columnspan=2)
+
 
 
     def _layout_draw_tab(self):
@@ -230,7 +301,7 @@ class ScannerFrame(ctk.CTkFrame):
     # Buttons
     # -----------------------
 
-    def _on_select_net_btn_click(self) -> None:
+    def _on_net_select_btn_click(self) -> None:
         '''Change the active network to the one in self._net_dropdown.'''
 
         # Get the currently selected network in dropdown
