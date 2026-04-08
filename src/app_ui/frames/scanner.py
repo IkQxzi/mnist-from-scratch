@@ -37,11 +37,14 @@ class ScannerFrame(ctk.CTkFrame):
     _curr_img_arr: cp.ndarray # 28x28
     _is_img_displayed: bool
 
-    # Input widgets
+    # Tabs and Frames
     _inputs_tabs: ctk.CTkTabview
+    _net_tab: ctk.CTkFrame
+    _draw_tab: ctk.CTkFrame
+    _upload_tab: ctk.CTkFrame
+    _results_frame: ctk.CTkFrame
     
     # Network tab widgets
-    _net_tab: ctk.CTkFrame
     _active_net_name_lbl: ctk.CTkLabel
     _active_net_acc_lbl: ctk.CTkLabel
     _active_net_loss_lbl: ctk.CTkLabel
@@ -57,7 +60,6 @@ class ScannerFrame(ctk.CTkFrame):
     _net_selected_popup_lbl: ctk.CTkLabel
     
     # Draw tab widgets
-    _draw_tab: ctk.CTkFrame
     _draw_tab_txt_box: ctk.CTkLabel
     _canvas: ctk.CTkCanvas
     _pil_canvas_cpy: Image.Image
@@ -66,7 +68,6 @@ class ScannerFrame(ctk.CTkFrame):
     _scan_btn_d_tab: ctk.CTkButton
 
     # Upload tab wijdgets
-    _upload_tab: ctk.CTkFrame
     _upload_btn: ctk.CTkButton
     _scan_btn_u_tab: ctk.CTkButton
     _usr_img_lbl: ctk.CTkLabel
@@ -74,10 +75,14 @@ class ScannerFrame(ctk.CTkFrame):
     _usr_img_ctk: ctk.CTkImage
     
     # Results widgets
-    _results_frame: ctk.CTkFrame
-    _net_pred_lbl: ctk.CTkLabel
-    _net_conf_lbl: ctk.CTkLabel
-    _gpu_usage_lbl: ctk.CTkLabel
+    _net_pred_txt_lbl: ctk.CTkLabel
+    _net_pred_num_lbl: ctk.CTkLabel
+    _net_conf_txt_lbl: ctk.CTkLabel
+    _net_conf_num_lbl: ctk.CTkLabel
+    _ax: matplotlib.axes.Axes
+    _fig: matplotlib.figure.Figure
+    _bars: matplotlib.container.BarContainer
+    _conf_figure_canvas: FigureCanvasTkAgg
     
 
     def __init__(self, container, controller: "App"):
@@ -102,7 +107,7 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Split layout in half
         self._inputs_tabs.grid(row=0, column=0, sticky='nsew')
-        self._results_frame.grid(row=0, column=0, sticky='nsew')
+        self._results_frame.grid(row=0, column=1, sticky='nsew')
 
         # Individual layouts
         self._layout_net_tab()
@@ -266,10 +271,10 @@ class ScannerFrame(ctk.CTkFrame):
         # Initialise confidence score figure,
         # creating the attributes below
         self._setup_conf_figure()
-        self.ax: matplotlib.axes.Axes
+        self._ax: matplotlib.axes.Axes
         self._fig: matplotlib.figure.Figure
         self._bars: matplotlib.container.BarContainer
-        self.conf_figure_canvas: FigureCanvasTkAgg
+        self._conf_figure_canvas: FigureCanvasTkAgg
     
 
 
@@ -365,8 +370,8 @@ class ScannerFrame(ctk.CTkFrame):
         self._net_conf_num_lbl.grid(row=1, column=1, sticky='nsew')
 
         # Place confidence graph below all the above, spanning both columns
-        self.conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
-        self.conf_figure_canvas.get_tk_widget().grid(row=2, columnspan=2, sticky='nsew')
+        self._conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
+        self._conf_figure_canvas.get_tk_widget().grid(row=2, columnspan=2, sticky='nsew')
     
     # -----------------------
     # Buttons
@@ -435,10 +440,14 @@ class ScannerFrame(ctk.CTkFrame):
     def _on_d_tab_scan_click(self):
         '''Scan the drawing in self._canvas.'''
 
+        # Scan the image from user
         usr_draw = self._capture_canvas()
+
+        # Update self._curr_img_arr
         self._set_formatted_img(usr_draw)
 
-        self.controller.network.fwd(self._curr_img_arr)
+        # Use attribute to fwd and update
+        self._fwd_and_update_results_frame(self._curr_img_arr)
 
 
     def _on_u_tab_upload_click(self):
@@ -459,14 +468,17 @@ class ScannerFrame(ctk.CTkFrame):
 
 
     def _on_u_tab_scan_click(self):
-        
+
+        # Do nothing if user image not displayed        
         if not self._usr_img_pil:
             return
 
+        # Process usr img into self._curr_img_arr
         self._set_formatted_img(self._usr_img_pil)
 
-        # TODO: network outputs
-        self.controller.network.fwd(self._curr_img_arr)
+        # Use curr img to update results frame
+        self._fwd_and_update_results_frame(self._curr_img_arr)
+
 
     # -----------------------
     # Functional methods
@@ -533,31 +545,31 @@ class ScannerFrame(ctk.CTkFrame):
         self._fig.patch.set_facecolor(self.controller.PRIMARY_BG_COLOUR)
 
         # Add axes (mplib Axis obj)
-        self.ax = self._fig.add_subplot()
+        self._ax = self._fig.add_subplot()
 
         # Change gridlines to be white
-        self.ax.tick_params(colors=grid_colour)
+        self._ax.tick_params(colors=grid_colour)
         
         # Hide the top and right borders
-        self.ax.spines['top'].set_visible(False)
-        self.ax.spines['right'].set_visible(False)
+        self._ax.spines['top'].set_visible(False)
+        self._ax.spines['right'].set_visible(False)
         
         # Set other borders to white
-        self.ax.spines['left'].set_color(grid_colour)
-        self.ax.spines['bottom'].set_color(grid_colour)
+        self._ax.spines['left'].set_color(grid_colour)
+        self._ax.spines['bottom'].set_color(grid_colour)
 
         digit_strs = [str(i) for i in range(10)]
         initial_conf_scores = [0 for _ in range(10)]
 
         # Save as attribute to modify height later
-        self._bars = self.ax.bar(x=digit_strs, height=initial_conf_scores,
+        self._bars = self._ax.bar(x=digit_strs, height=initial_conf_scores,
                                  color=self.controller.SECONDARY_BLUE_COLOUR)
         
         # Make y-axis go from 0 to 100 (as conf scores do)
-        self.ax.set_ylim(bottom=0, top=100)
+        self._ax.set_ylim(bottom=0, top=100)
 
         # Create canvas with graph embedded
-        self.conf_figure_canvas = FigureCanvasTkAgg(self._fig, master=self._results_frame)
+        self._conf_figure_canvas = FigureCanvasTkAgg(self._fig, master=self._results_frame)
 
 
     def _update_conf_figure(self, conf_scores_gpu: cp.ndarray, pred_digit: int):
@@ -581,6 +593,23 @@ class ScannerFrame(ctk.CTkFrame):
             # Important to reset the colours
             else: 
                 bar.set_color(self.controller.SECONDARY_BLUE_COLOUR)
-                
+
         # Apply changes
-        self.conf_figure_canvas.draw()
+        self._conf_figure_canvas.draw()
+
+    
+    def _fwd_and_update_results_frame(self, inputs: cp.ndarray):
+        '''Forward inputs to network and update all aspects of the results frame.'''
+
+        self.controller.network.fwd(inputs)
+        pred_digit, main_conf_score = self.controller.network.get_pred_digit_and_conf()
+
+
+        # Update main prediction
+        self._net_pred_num_lbl.config(text=f'{pred_digit}')
+
+        # Update conf score and format to 1 d.p.
+        self._net_conf_num_lbl.config(text=f'{main_conf_score:.1f}%')
+
+        # Update figure with conf score from gpu and pred digit
+        self._update_conf_figure(self.controller.network.conf_scores, pred_digit)

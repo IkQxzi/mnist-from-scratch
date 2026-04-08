@@ -40,7 +40,7 @@ class NetworkDense(Network):
         # Will be updated after forwarding
         self.probs = cp.array([], dtype=float) 
         self.conf_scores = cp.array([], dtype=float)
-        self.pred_digit: int
+
 
     @classmethod
     def load_pretrained(cls, raw_net_cont, layer_metadata: dict):
@@ -95,7 +95,7 @@ class NetworkDense(Network):
             
 
     def _calc_conf_scores(self) -> None:
-        '''Calculate and update self.conf_scores using self.probs.'''
+        '''Calculate and update self.conf_scores and self.pred_digit using self.probs.'''
 
         output_sum = cp.sum(self.probs, axis=1) # Sum of each sample
         self.conf_scores = cp.ones_like(self.probs)
@@ -104,6 +104,18 @@ class NetworkDense(Network):
 
         self.conf_scores *= 100 # dec to %
         self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+
+
+    def get_pred_digit_and_conf(self) -> tuple[int, int]:
+        '''Get the network's main prediction and confidence score (unrounded).'''
+
+        # Explicitly cast to int
+        pred_digit = int(cp.argmax(self.conf_scores))
+        
+        # Round later
+        main_conf_score = round(cp.max(self.conf_scores), 3)
+        
+        return pred_digit, main_conf_score
 
 
     def fwd(self, inputs: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
