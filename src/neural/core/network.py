@@ -40,29 +40,27 @@ class NetworkDense(Network):
         # Will be updated after forwarding
         self.probs = cp.array([], dtype=float) 
         self.conf_scores = cp.array([], dtype=float)
+        self.pred_digit: int
 
     @classmethod
-    def load_pretrained(cls, container: dict):
+    def load_pretrained(cls, raw_net_cont, layer_metadata: dict):
         '''
         Load a NetworkDense using a container from a .npz file.
         
-        :param container: The container from the .npz file.
+        :param container: The container from the .npz file after being decoded from json.
         :type container: dict
         '''
 
         # List of layer objects (as in __init__())
         layers = []
 
-        # The list of dicts for each layer
-        layer_params = container['layers']
-
-        for layer in layer_params:
+        for layer in layer_metadata:
             
-            layer_cls_name = getattr(layer, layer['cls_name'])
+            layer_cls_name = layer['cls_name']
             layer_kwargs = layer['kwargs']
 
             # Create dense layer and load pretrained params (from container)
-            if layer_cls_name is LayerDense:
+            if layer_cls_name == 'LayerDense':
 
                 # Get the keys for weights, biases
                 keys = layer['keys']
@@ -71,9 +69,11 @@ class NetworkDense(Network):
 
                 # load_params overwrites random params
                 dense = LayerDense(**layer_kwargs)
+                
+                # Convert weights, biases to cupy arrays before writing
                 dense.load_params(
-                                weights=container[w_key],
-                                biases=container[b_key]
+                                weights=cp.asarray(raw_net_cont[w_key]),
+                                biases=cp.asarray(raw_net_cont[b_key])
                                   )
         
                 layers.append(dense)

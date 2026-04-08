@@ -1,7 +1,8 @@
 import os
+import json
 from typing import Type
 
-import cupy as cp
+import numpy as np
 import customtkinter as ctk
 
 from neural import NetworkDense
@@ -19,8 +20,12 @@ class App(ctk.CTk):
     MODEL_DIR = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
     DIGIT_IMG_SIZE = (28, 28)
 
+    # Styling constants
     PRIMARY_BTN_COLOUR = '#1F6AA5'
     PRIMARY_LBL_COLOUR = '#304674'
+    PRIMARY_BG_COLOUR = '#2b2b2b'
+    PRIMARY_GREEN_COLOUR = '#22c55e'
+    SECONDARY_BLUE_COLOUR = '#3b82f6'
     LBL_CORNER_RADIUS = 10
     
     # To be used by the frames
@@ -70,31 +75,30 @@ class App(ctk.CTk):
 
         # Get the file name of network from just the name itself
         # Raise error if file not found
-        for i, pre_net_name in enumerate(self.net_infos['net_names']):
-            if pre_net_name == net_name:
-                net_fname = self.net_infos['net_fnames'][i]
-            else:
-                raise FileNotFoundError()
+        net_index = self.net_infos['net_names'].index(net_name)
+        net_fname = self.net_infos['net_fnames'][net_index]
 
-        # Load network container
-        net_cont = cp.load(file=rf'{App.MODEL_DIR}\{net_fname}')
-        assert type(net_cont) == dict # To keep linter happy
+        # Load network container and extract metadata
+        raw_net_cont = np.load(file=rf'{App.MODEL_DIR}\{net_fname}')
+        raw_metadata_json_str = str(raw_net_cont['metadata'])
+        metadata = json.loads(raw_metadata_json_str)
+        training_metadata = metadata['training']
 
         # Change active network
-        self.network = NetworkDense.load_pretrained(net_cont)
+        self.network = NetworkDense.load_pretrained(raw_net_cont, metadata['layers']) 
         
         # Save active network info as controller attributes so all frames can access it
         # Mirrors structure in train/train_networks.py
         self.active_net_info = {
             'f_name': net_fname,
-            'name': net_cont['name'],
-            'avg_acc': net_cont['avg_acc'],
-            'avg_loss': net_cont['avg_loss'],
-            'size': len(net_cont['layers'])
+            'name': net_name,
+            'avg_acc': training_metadata['avg_acc'],
+            'avg_loss': training_metadata['avg_loss'],
+            'size': len(metadata['layers'])
         }
         
         # Return metadata
-        return net_cont['metadata']
+        return metadata
     
 
     def update_net_infos(self) -> None:

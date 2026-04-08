@@ -6,46 +6,55 @@ from typing import TYPE_CHECKING
 import cupy as cp
 import customtkinter as ctk
 from PIL import Image, ImageDraw, ImageGrab, ImageOps
+import matplotlib.axes, matplotlib.figure, matplotlib.container
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # local
 if TYPE_CHECKING:
     from app_ui.controller import App
 
 class ScannerFrame(ctk.CTkFrame):
-
+    
     # Constants
     USR_IMG_SIZE = (500, 500)
     SKIP_IMG_SELECT = False
+    BRUSH_SIZE = 125
+
+    # Button sizes
     BTN_HEIGHT = 50
     SMALL_BTN_HEIGHT = 20
-    BRUSH_SIZE = 50
-    controller: "App"
 
-    # Fonts (also constant)
+    # Fonts
     SMALL_BTN_FONT = ("Arial", 14, "bold")
     BTN_FONT = ("Arial", 25, "bold")
     BIG_BTN_FONT = ("Arial", 35, "bold")
     BIGGEST_BTN_FONT= ("Arial", 45, "bold")
 
+    # Multi-use attributes
+    controller: "App"
     _curr_img_pil: Image.Image
     _curr_img_arr: cp.ndarray # 28x28
     _is_img_displayed: bool
 
-    
     # Input widgets
     _inputs_tabs: ctk.CTkTabview
     
     # Network tab widgets
     _net_tab: ctk.CTkFrame
-    _net_dropdown: ctk.CTkComboBox
-    _net_select_title: ctk.CTkLabel
-    _net_metric_height: int = 50
-    _net_metric_width: int = 50
-    _net_select_btn: ctk.CTkButton
     _active_net_name_lbl: ctk.CTkLabel
     _active_net_acc_lbl: ctk.CTkLabel
+    _active_net_loss_lbl: ctk.CTkLabel
+    _active_net_size_lbl: ctk.CTkLabel
+    
+    _net_select_title_lbl: ctk.CTkLabel
+    _net_dropdown: ctk.CTkComboBox
     _selected_net_name_lbl: ctk.CTkLabel
     _selected_net_acc_lbl: ctk.CTkLabel
+    _selected_net_loss_lbl: ctk.CTkLabel
+    _selected_net_size_lbl: ctk.CTkLabel
+    _net_select_btn: ctk.CTkButton
+    _net_selected_popup_lbl: ctk.CTkLabel
     
     # Draw tab widgets
     _draw_tab: ctk.CTkFrame
@@ -78,10 +87,6 @@ class ScannerFrame(ctk.CTkFrame):
 
         self.controller = controller
 
-        # Split the frame into jtwo equal columns & 1 row
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
 
         # Input side split into tabs
         self._inputs_tabs = ctk.CTkTabview(self)
@@ -89,8 +94,17 @@ class ScannerFrame(ctk.CTkFrame):
         self._create_draw_tab()
         self._create_upload_tab()
         self._create_results_frame()
+        
+        # Split the frame into jtwo equal columns & 1 row
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        self._inputs_tabs.grid(row=0, column=0, padx=20, pady=20, sticky='nsew')
+        # Split layout in half
+        self._inputs_tabs.grid(row=0, column=0, sticky='nsew')
+        self._results_frame.grid(row=0, column=0, sticky='nsew')
+
+        # Individual layouts
         self._layout_net_tab()
         self._layout_draw_tab()
         self._layout_upload_tab()
@@ -114,23 +128,23 @@ class ScannerFrame(ctk.CTkFrame):
         self._net_tab = self._inputs_tabs.add("Network")
 
         # Name of active network (by default none selected)
-        self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_name_lbl",
+        self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="Active Network: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
                                                  font=self.BIG_BTN_FONT)
         
         # Metrics of active network 
-        self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_acc_lbl",
+        self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Accuracy: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
                                                  font=self.BTN_FONT)
         
-        self._active_net_loss_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_loss_lbl",
+        self._active_net_loss_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Loss: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
                                                  font=self.BTN_FONT)
         
-        self._active_net_size_lbl = ctk.CTkLabel(self._net_tab, text="_active_net_size_lbl",
+        self._active_net_size_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Size: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
                                                  font=self.BTN_FONT)
@@ -175,10 +189,11 @@ class ScannerFrame(ctk.CTkFrame):
         # Confirmation button so that the user can look through networks without loading each one
         self._net_select_btn = ctk.CTkButton(self._net_tab, text="Select Network", command=self._on_net_select_btn_click,
                                              font=self.BIG_BTN_FONT)
+        
+        # Will only be shown when required in layout
         self._net_selected_popup_lbl = ctk.CTkLabel(self._net_tab, text="Network selected!",
-                                                 fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.BTN_FONT, text_color='#2B2B2B')
 
 
     def _create_draw_tab(self):
@@ -187,7 +202,8 @@ class ScannerFrame(ctk.CTkFrame):
         self._draw_tab = self._inputs_tabs.add("Draw")
 
         self._draw_tab_txt_box = ctk.CTkLabel(self._draw_tab, text="Try to fill the canvas as much as possible for the best network predictions.",
-                                             height=self.SMALL_BTN_HEIGHT, font=self.SMALL_BTN_FONT, corner_radius=self.controller.LBL_CORNER_RADIUS, fg_color=self.controller.PRIMARY_BTN_COLOUR,) 
+                                             height=self.SMALL_BTN_HEIGHT, font=self.SMALL_BTN_FONT, 
+                                             corner_radius=self.controller.LBL_CORNER_RADIUS, fg_color=self.controller.PRIMARY_BTN_COLOUR,) 
 
         # For user to draw on 
         self._canvas = ctk.CTkCanvas(self._draw_tab)
@@ -234,9 +250,28 @@ class ScannerFrame(ctk.CTkFrame):
         
         # TODO: add gpu lbl here
 
-        # net outputs
-        self._net_pred_lbl = ctk.CTkLabel(self, text="The network's prediction will be displayed here.")
-        self._net_conf_lbl = ctk.CTkLabel(self, text="The network's confidence will be displayed here.")
+        # Prediction labels
+        self._net_pred_txt_lbl = ctk.CTkLabel(self._results_frame, 
+                                              text="The network's prediction will be displayed here.")
+        self._net_pred_num_lbl = ctk.CTkLabel(self._results_frame, text='X', 
+                                              height=100, width=100,
+                                              fg_color=self.controller.PRIMARY_LBL_COLOUR)
+
+
+        # Main confidence labels
+        self._net_conf_txt_lbl = ctk.CTkLabel(self._results_frame, 
+                                              text="The network's confidence will be displayed here.")
+        self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="XX%")
+
+        # Initialise confidence score figure,
+        # creating the attributes below
+        self._setup_conf_figure()
+        self.ax: matplotlib.axes.Axes
+        self._fig: matplotlib.figure.Figure
+        self._bars: matplotlib.container.BarContainer
+        self.conf_figure_canvas: FigureCanvasTkAgg
+    
+
 
     # -----------------------
     # Layout
@@ -246,7 +281,7 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Local constants
         COLUMN_COUNT = 2
-        ROW_COUNT = 7
+        ROW_COUNT = 8
 
         # Force the number of columns specified
         for i in range(COLUMN_COUNT):
@@ -259,29 +294,32 @@ class ScannerFrame(ctk.CTkFrame):
         
         # Place active net name on the left middle 
         # And span 3 rows so it is the same as the metrics table on the right
-        self._active_net_name_lbl.grid(row=1, column=0, padx=15, pady=15,
-                                       sticky='ew')
+        self._active_net_name_lbl.grid(row=1, column=0, padx=100, pady=50,
+                                       )
         
         # Vertically stack active net metrics on the right side
-        self._active_net_acc_lbl.grid(row=0, column=1, padx=5, pady=5)
-        self._active_net_loss_lbl.grid(row=1, column=1, padx=5, pady=5)
-        self._active_net_size_lbl.grid(row=2, column=1, padx=5, pady=5)
+        self._active_net_acc_lbl.grid(row=0, column=1, padx=5, pady=15)
+        self._active_net_loss_lbl.grid(row=1, column=1, padx=5, pady=15)
+        self._active_net_size_lbl.grid(row=2, column=1, padx=5, pady=15)
 
         # Place network selection title in the section below active network info
         # And make it span the entire tabk
-        self._net_select_title_lbl.grid(row=3, sticky='ew', columnspan=2)
+        self._net_select_title_lbl.grid(row=3, sticky='ew', columnspan=2, pady=50)
 
         # Place net dropdown left of metrics (aligned with middle row)
         self._net_dropdown.grid(row=5, column=0, padx=5, pady=5, sticky='ew')
 
         # PLace selected net metrics bottom right
-        self._selected_net_acc_lbl.grid(row=4, column=1, padx=5, pady=5)
-        self._selected_net_loss_lbl.grid(row=5, column=1, padx=5, pady=5)
-        self._selected_net_size_lbl.grid(row=6, column=1, padx=5, pady=5)
+        self._selected_net_acc_lbl.grid(row=4, column=1, padx=5, pady=15)
+        self._selected_net_loss_lbl.grid(row=5, column=1, padx=5, pady=15)
+        self._selected_net_size_lbl.grid(row=6, column=1, padx=5, pady=15)
 
         # Place network selection button bottom middle, across both columns
-        self._net_select_btn.grid(row=7, padx=5, pady=5, sticky='ew', columnspan=2)
+        self._net_select_btn.grid(row=7, padx=5, pady=(30, 0), sticky='ew', columnspan=2)
 
+        # Place network selected popup (disabled)
+        self._net_selected_popup_lbl.configure(state='disabled')
+        self._net_selected_popup_lbl.grid(row=8, padx=10, pady=5, sticky='ew', columnspan=2)
 
 
     def _layout_draw_tab(self):
@@ -310,34 +348,39 @@ class ScannerFrame(ctk.CTkFrame):
 
 
     def _layout_results_frame(self):
-        return
 
-        # Rejsults stuff is column 1
-        self._results_frame.grid(row=0, column=1, padx=20, pady=20, sticky='nesw')
+        # Split results frame in half
+        self._results_frame.columnconfigure(index=[0, 1], weight=1)
 
-        # net outputs
-        self._net_dropdown.grid(row=2, column=1, padx=20, pady=20)
-        self._net_pred_lbl.grid(row=3, column=1, padx=20, pady=5)
-        self._net_conf_lbl.grid(row=4, column=1, padx=20, pady=5)
+        # Place prediction text top left
+        self._net_pred_txt_lbl.grid(row=0, column=0, sticky='ew')
+    
+        # Place prediciton number right of prediction text
+        self._net_pred_num_lbl.grid(row=0, column=1, sticky='nsew')
+
+        # Place confidence text below prediction info
+        self._net_conf_txt_lbl.grid(row=1, column=0, sticky='ew')
+
+        # Place prediction output right of prediction text
+        self._net_conf_num_lbl.grid(row=1, column=1, sticky='nsew')
+
+        # Place confidence graph below all the above, spanning both columns
+        self.conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
+        self.conf_figure_canvas.get_tk_widget().grid(row=2, columnspan=2, sticky='nsew')
     
     # -----------------------
     # Buttons
     # -----------------------
 
-    def _on_net_select_btn_click(self) -> None:
-        '''Change the active network to the one in self._net_dropdown.'''
-
-        # Get the currently selected network in dropdown
-        net_name = self._net_dropdown.get()
-        
-        # Set as active network
-        self.controller.set_network(net_name)
-
-
     # Note that tkinter automatically passes in the selected net name when called
     def _on_net_dropdown_update(self, selected_net_name: str) -> None:
-        '''Update the displayed metrics for the selected network when a new one is selected.'''
-        
+        '''Update the displayed metrics for the selected network when a new one is selected
+        and disable the network selected confirmation dialogue.'''
+
+        # If popup is present then disable confirmation dialogue to prevent confusing user
+        if self._net_selected_popup_lbl.winfo_viewable():
+            self._net_selected_popup_lbl.configure(state='disabled')
+
         # Get the index of net within controller net infos dict to get metrics later
         net_index = self.controller.net_infos['net_names'].index(selected_net_name)
 
@@ -350,6 +393,37 @@ class ScannerFrame(ctk.CTkFrame):
         self._selected_net_acc_lbl.configure(text=f'Accuracy: {avg_acc}')
         self._selected_net_loss_lbl.configure(text=f'Loss: {avg_loss}')
         self._selected_net_size_lbl.configure(text=f'Size: {size} layers')
+
+
+    def _on_net_select_btn_click(self) -> None:
+        '''Change the active network to the one in self._net_dropdown and display a popup.'''
+
+        # Get the currently selected network in dropdown
+        net_name = self._net_dropdown.get()
+        print(net_name)
+
+        # Get the index of net within controller net infos dict to get metrics later
+        net_index = self.controller.net_infos['net_names'].index(net_name)
+        
+        # Set as active network
+        self.controller.set_network(net_name)
+
+        # Get the new values for acc, loss, size from controller
+        avg_acc = self.controller.net_infos['net_accs'][net_index]
+        avg_loss = self.controller.net_infos['net_losses'][net_index]
+        size = self.controller.net_infos['net_sizes'][net_index]
+
+        # Update the active network name label
+        self._active_net_name_lbl.configure(text=f'Active Network: {net_name}')
+
+        # Update the metrics labels with the new values
+        self._active_net_acc_lbl.configure(text=f'Accuracy: {avg_acc}')
+        self._active_net_loss_lbl.configure(text=f'Loss: {avg_loss}')
+        self._active_net_size_lbl.configure(text=f'Size: {size} layers')
+
+        # Show popup telling user network is selected
+        # Will be reset when another selection is made
+        self._net_selected_popup_lbl.configure(state='active')
 
 
     def _on_d_tab_clear_click(self):
@@ -446,6 +520,67 @@ class ScannerFrame(ctk.CTkFrame):
         # Convert to cp arr (0-1)
         self._curr_img_arr = cp.asarray(self._curr_img_arr) / 255
 
+    def _setup_conf_figure(self):
+        '''Setup the confidence scores figure and attach to the results frame.'''
+
+        # White looks best with ctk
+        grid_colour = 'white'
+
+        # Create figure object, 5x3in, high dpi to be sharp
+        self._fig = Figure(figsize=(5, 3), dpi=100)
+
+        # Set the background colour to be the same as the rest of the app
+        self._fig.patch.set_facecolor(self.controller.PRIMARY_BG_COLOUR)
+
+        # Add axes (mplib Axis obj)
+        self.ax = self._fig.add_subplot()
+
+        # Change gridlines to be white
+        self.ax.tick_params(colors=grid_colour)
+        
+        # Hide the top and right borders
+        self.ax.spines['top'].set_visible(False)
+        self.ax.spines['right'].set_visible(False)
+        
+        # Set other borders to white
+        self.ax.spines['left'].set_color(grid_colour)
+        self.ax.spines['bottom'].set_color(grid_colour)
+
+        digit_strs = [str(i) for i in range(10)]
+        initial_conf_scores = [0 for _ in range(10)]
+
+        # Save as attribute to modify height later
+        self._bars = self.ax.bar(x=digit_strs, height=initial_conf_scores,
+                                 color=self.controller.SECONDARY_BLUE_COLOUR)
+        
+        # Make y-axis go from 0 to 100 (as conf scores do)
+        self.ax.set_ylim(bottom=0, top=100)
+
+        # Create canvas with graph embedded
+        self.conf_figure_canvas = FigureCanvasTkAgg(self._fig, master=self._results_frame)
 
 
-    
+    def _update_conf_figure(self, conf_scores_gpu: cp.ndarray, pred_digit: int):
+        '''Update the confidence figure in the results frame,
+        using the confidence scores provided directly from the GPU,
+        and the main predicted digit.'''
+
+        # Move conf scores to CPU
+        conf_scores_cpu = cp.asnumpy(conf_scores_gpu)
+
+        # Update bars
+        for i, bar in enumerate(self._bars):
+            
+            # Update bar heights
+            bar.set_height(conf_scores_cpu[i])
+
+            # Highlight main prediction bar in green
+            if i == pred_digit:
+                bar.set_color(self.controller.PRIMARY_GREEN_COLOUR)
+            
+            # Important to reset the colours
+            else: 
+                bar.set_color(self.controller.SECONDARY_BLUE_COLOUR)
+                
+        # Apply changes
+        self.conf_figure_canvas.draw()

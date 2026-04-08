@@ -43,7 +43,8 @@ def save_model_params(network: NetworkDense, path: str, training_metadata: dict)
 
         metadata['layers'].append({
             'cls_name': layer.__class__.__name__,
-            'kwargs': layer.kwargs
+            'kwargs': layer.kwargs,
+            'keys': {} # Will have w_key, b_key
         })
 
         # Save param keys for dense layers
