@@ -14,6 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 if TYPE_CHECKING:
     from app_ui.controller import App
 
+
 class ScannerFrame(ctk.CTkFrame):
     
     # Constants
@@ -257,16 +258,23 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Prediction labels
         self._net_pred_txt_lbl = ctk.CTkLabel(self._results_frame, 
-                                              text="The network's prediction will be displayed here.")
+                                              text="Network Prediction:",
+                                              font=self.BIG_BTN_FONT)
+        
         self._net_pred_num_lbl = ctk.CTkLabel(self._results_frame, text='X', 
                                               height=100, width=100,
-                                              fg_color=self.controller.PRIMARY_LBL_COLOUR)
+                                              fg_color=self.controller.PRIMARY_LBL_COLOUR, 
+                                              font=self.BIGGEST_BTN_FONT)
 
 
         # Main confidence labels
         self._net_conf_txt_lbl = ctk.CTkLabel(self._results_frame, 
-                                              text="The network's confidence will be displayed here.")
-        self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="XX%")
+                                              text="Confidence:",
+                                              font=self.BIG_BTN_FONT)
+        
+        self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="XX%",
+                                              fg_color=self.controller.PRIMARY_BTN_COLOUR,
+                                              font=self.BIGGEST_BTN_FONT)
 
         # Initialise confidence score figure,
         # creating the attributes below
@@ -356,15 +364,16 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Split results frame in half
         self._results_frame.columnconfigure(index=[0, 1], weight=1)
+        self._results_frame.rowconfigure(index=[0, 1, 2], weight=1)
 
         # Place prediction text top left
-        self._net_pred_txt_lbl.grid(row=0, column=0, sticky='ew')
+        self._net_pred_txt_lbl.grid(row=0, column=0, sticky='nse')
     
         # Place prediciton number right of prediction text
         self._net_pred_num_lbl.grid(row=0, column=1, sticky='nsew')
 
         # Place confidence text below prediction info
-        self._net_conf_txt_lbl.grid(row=1, column=0, sticky='ew')
+        self._net_conf_txt_lbl.grid(row=1, column=0, sticky='nse')
 
         # Place prediction output right of prediction text
         self._net_conf_num_lbl.grid(row=1, column=1, sticky='nsew')
@@ -422,8 +431,8 @@ class ScannerFrame(ctk.CTkFrame):
         self._active_net_name_lbl.configure(text=f'Active Network: {net_name}')
 
         # Update the metrics labels with the new values
-        self._active_net_acc_lbl.configure(text=f'Accuracy: {avg_acc}')
-        self._active_net_loss_lbl.configure(text=f'Loss: {avg_loss}')
+        self._active_net_acc_lbl.configure(text=f'Accuracy: {avg_acc:.1f}')
+        self._active_net_loss_lbl.configure(text=f'Loss: {avg_loss:.2f}')
         self._active_net_size_lbl.configure(text=f'Size: {size} layers')
 
         # Show popup telling user network is selected
@@ -515,7 +524,7 @@ class ScannerFrame(ctk.CTkFrame):
         usr_draw = ImageGrab.grab((x0, y0, x1, y1))
         
         # For debugging
-        usr_draw.show()
+        # usr_draw.show()
         return usr_draw
 
 
@@ -529,8 +538,15 @@ class ScannerFrame(ctk.CTkFrame):
         img = img.resize(size=self.controller.DIGIT_IMG_SIZE).convert(mode='L')
         self._curr_img_pil = ImageOps.invert(img)
 
-        # Convert to cp arr (0-1)
-        self._curr_img_arr = cp.asarray(self._curr_img_arr) / 255
+        self._curr_img_pil.show()
+
+        # Convert to 2d cp arr (0-1)
+        # Keep float32 for GPU optimisations
+        curr_img_2d_arr = cp.asarray(self._curr_img_pil, dtype='float32') / 255
+
+        # Flatten arr to 1d
+        self._curr_img_arr = curr_img_2d_arr.flatten()
+
 
     def _setup_conf_figure(self):
         '''Setup the confidence scores figure and attach to the results frame.'''
@@ -546,6 +562,13 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Add axes (mplib Axis obj)
         self._ax = self._fig.add_subplot()
+
+        # Add title 
+        self._ax.set_title('Prediction Distribution')
+
+        # Add labels to axes
+        self._ax.set_ylabel('Confidence')
+        self._ax.set_xlabel('Digit')
 
         # Change gridlines to be white
         self._ax.tick_params(colors=grid_colour)
@@ -577,8 +600,8 @@ class ScannerFrame(ctk.CTkFrame):
         using the confidence scores provided directly from the GPU,
         and the main predicted digit.'''
 
-        # Move conf scores to CPU
-        conf_scores_cpu = cp.asnumpy(conf_scores_gpu)
+        # Move conf scores to CPU after flattening to 1D
+        conf_scores_cpu = cp.asnumpy(conf_scores_gpu.flatten())
 
         # Update bars
         for i, bar in enumerate(self._bars):
@@ -601,15 +624,16 @@ class ScannerFrame(ctk.CTkFrame):
     def _fwd_and_update_results_frame(self, inputs: cp.ndarray):
         '''Forward inputs to network and update all aspects of the results frame.'''
 
+        # Forward inputs to net and get outputs
         self.controller.network.fwd(inputs)
         pred_digit, main_conf_score = self.controller.network.get_pred_digit_and_conf()
 
-
         # Update main prediction
-        self._net_pred_num_lbl.config(text=f'{pred_digit}')
+        self._net_pred_num_lbl.configure(text=f'{pred_digit}')
 
         # Update conf score and format to 1 d.p.
-        self._net_conf_num_lbl.config(text=f'{main_conf_score:.1f}%')
+        self._net_conf_num_lbl.configure(text=f'{main_conf_score:.1f}%')
 
         # Update figure with conf score from gpu and pred digit
-        self._update_conf_figure(self.controller.network.conf_scores, pred_digit)
+        self._update_conf_figure(conf_scores_gpu=self.controller.network.conf_scores, 
+                                 pred_digit=pred_digit)

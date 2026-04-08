@@ -103,17 +103,17 @@ class NetworkDense(Network):
             self.conf_scores[i] = (self.probs[i] / output_sum[i])
 
         self.conf_scores *= 100 # dec to %
-        self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+        # self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
 
 
-    def get_pred_digit_and_conf(self) -> tuple[int, int]:
+    def get_pred_digit_and_conf(self) -> tuple[int, float]:
         '''Get the network's main prediction and confidence score (unrounded).'''
 
         # Explicitly cast to int
         pred_digit = int(cp.argmax(self.conf_scores))
         
-        # Round later
-        main_conf_score = round(cp.max(self.conf_scores), 3)
+        # cp.max always returns an arr, so cast to float
+        main_conf_score = float(cp.max(self.conf_scores))
         
         return pred_digit, main_conf_score
 
