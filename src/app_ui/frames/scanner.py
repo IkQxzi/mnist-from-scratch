@@ -29,16 +29,6 @@ class ScannerFrame(ctk.CTkFrame):
     USR_IMG_SIZE = (500, 500)
     SKIP_IMG_SELECT = False
 
-    # Button sizes
-    BTN_HEIGHT = 50
-    SMALL_BTN_HEIGHT = 20
-
-    # Fonts
-    SMALL_BTN_FONT = ("Arial", 14, "bold")
-    BTN_FONT = ("Arial", 25, "bold")
-    BIG_BTN_FONT = ("Arial", 35, "bold")
-    BIGGEST_BTN_FONT= ("Arial", 45, "bold")
-    
     # Draw tab constants
     BRUSH_SIZE = 75
     CANVAS_SIDELENGTH = 800
@@ -148,36 +138,36 @@ class ScannerFrame(ctk.CTkFrame):
         self._active_net_name_lbl = ctk.CTkLabel(self._net_tab, text="Active Network: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BIG_BTN_FONT)
+                                                 font=self.controller.BIG_BTN_FONT)
         
         # Metrics of active network 
         self._active_net_acc_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Accuracy: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         self._active_net_loss_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Loss: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         self._active_net_size_lbl = ctk.CTkLabel(self._net_tab, text="Active Network Size: NONE ACTIVE",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         # To separate active nektwork section from network selection
         self._net_select_title_lbl = ctk.CTkLabel(self._net_tab, text='Available Networks',
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BIGGEST_BTN_FONT)
+                                                 font=self.controller.BIGGEST_BTN_FONT)
 
         # List of available networks 
         # Fill with values first to not have 'CTkComboBox' as the default value
         # Contains name of selected network at the top
         self._net_dropdown = ctk.CTkComboBox(self._net_tab, values=self.controller.net_infos['net_names'],
-                                             font=self.BIG_BTN_FONT,
-                                             dropdown_font=self.BIG_BTN_FONT,
+                                             font=self.controller.BIG_BTN_FONT,
+                                             dropdown_font=self.controller.BIG_BTN_FONT,
                                              command=self._on_net_dropdown_update) # Cur val passed in automatically
 
 
@@ -191,26 +181,26 @@ class ScannerFrame(ctk.CTkFrame):
         self._selected_net_acc_lbl = ctk.CTkLabel(self._net_tab, text=f"Accuracy: {startup_net_acc}",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         self._selected_net_loss_lbl = ctk.CTkLabel(self._net_tab, text=f"Loss: {startup_net_loss}",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         self._selected_net_size_lbl = ctk.CTkLabel(self._net_tab, text=f"Size: {startup_net_size}",
                                                  fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT)
+                                                 font=self.controller.BTN_FONT)
         
         # Confirmation button so that the user can look through networks without loading each one
         self._net_select_btn = ctk.CTkButton(self._net_tab, text="Select Network", command=self._on_net_select_btn_click,
-                                             font=self.BIG_BTN_FONT)
+                                             font=self.controller.BIG_BTN_FONT)
         
         # Will only be shown when required in layout
         self._net_selected_popup_lbl = ctk.CTkLabel(self._net_tab, text="Network selected!",
                                                  corner_radius=self.controller.LBL_CORNER_RADIUS,
-                                                 font=self.BTN_FONT, text_color='#2B2B2B')
+                                                 font=self.controller.BTN_FONT, text_color='#2B2B2B')
 
 
     def _create_draw_tab(self):
@@ -219,7 +209,7 @@ class ScannerFrame(ctk.CTkFrame):
         self._draw_tab = self._inputs_tabs.add("Draw")
 
         self._draw_tab_txt_box = ctk.CTkLabel(self._draw_tab, text="Try to fill the canvas as much as possible for the best network predictions.",
-                                             height=self.SMALL_BTN_HEIGHT, font=self.SMALL_BTN_FONT, 
+                                             height=self.controller.SMALL_BTN_HEIGHT, font=self.controller.SMALL_BTN_FONT, 
                                              corner_radius=self.controller.LBL_CORNER_RADIUS, fg_color=self.controller.PRIMARY_BTN_COLOUR,) 
 
         # For user to draw on 
@@ -236,11 +226,11 @@ class ScannerFrame(ctk.CTkFrame):
         self._canvas.bind('<B1-Motion>', self._canvas_draw)
 
         self._clear_btn = ctk.CTkButton(self._draw_tab, text="Clear Canvas", command=self._on_d_tab_clear_click, 
-                                         height=self.BTN_HEIGHT, font=self.BTN_FONT)
+                                         height=self.controller.BTN_HEIGHT, font=self.controller.BTN_FONT)
         
         # Uses different cmd to upload scan btn bc it must read canvas instead of img
         self._scan_btn_d_tab = ctk.CTkButton(self._draw_tab, text="Scan Drawing", command=self._on_d_tab_scan_click,
-                                             height=self.BTN_HEIGHT, font=self.BTN_FONT) 
+                                             height=self.controller.BTN_HEIGHT, font=self.controller.BTN_FONT) 
 
 
     def _create_upload_tab(self):
@@ -249,9 +239,9 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Usr buttons
         self._upload_btn = ctk.CTkButton(self._upload_tab, text="Upload Image", command=self._on_u_tab_upload_click, 
-                                         height=self.BTN_HEIGHT, font=self.BTN_FONT)
+                                         height=self.controller.BTN_HEIGHT, font=self.controller.BTN_FONT)
         self._scan_btn_u_tab = ctk.CTkButton(self._upload_tab, text="Scan Image", command=self._on_u_tab_scan_click,
-                                             height=self.BTN_HEIGHT, font=self.BTN_FONT)
+                                             height=self.controller.BTN_HEIGHT, font=self.controller.BTN_FONT)
 
         # img
         self._usr_img_lbl = ctk.CTkLabel(self._upload_tab, text="")
@@ -269,14 +259,14 @@ class ScannerFrame(ctk.CTkFrame):
         
         self._active_net_lbl_r_frame = ctk.CTkLabel(self._results_frame,
                                                     text="Active Network: NONE",
-                                                    font=self.BIGGEST_BTN_FONT,
+                                                    font=self.controller.BIGGEST_BTN_FONT,
                                                     fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                                     corner_radius=self.controller.LBL_CORNER_RADIUS)
 
         # Prediction labels
         self._net_pred_txt_lbl = ctk.CTkLabel(self._results_frame, 
                                               text="Network Prediction:",
-                                              font=self.BIG_BTN_FONT)
+                                              font=self.controller.BIG_BTN_FONT)
         
         self._net_pred_num_lbl = ctk.CTkLabel(self._results_frame, text='N/A',
                                               fg_color=self.controller.PRIMARY_LBL_COLOUR, 
@@ -286,14 +276,14 @@ class ScannerFrame(ctk.CTkFrame):
         # Main confidence labels
         self._net_conf_txt_lbl = ctk.CTkLabel(self._results_frame, 
                                               text="Confidence:",
-                                              font=self.BIG_BTN_FONT)
+                                              font=self.controller.BIG_BTN_FONT)
         
         self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="N/A",
                                               fg_color=self.controller.PRIMARY_LBL_COLOUR,
-                                              font=self.BIGGEST_BTN_FONT)
+                                              font=self.controller.BIGGEST_BTN_FONT)
 
         self._conf_fig_title = ctk.CTkLabel(self._results_frame, text='Prediction Distribution',
-                                           font=self.BIGGEST_BTN_FONT,
+                                           font=self.controller.BIGGEST_BTN_FONT,
                                            fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                            corner_radius=self.controller.LBL_CORNER_RADIUS)
 
@@ -411,9 +401,10 @@ class ScannerFrame(ctk.CTkFrame):
         # Place confidence graph below all the above, spanning both columns
         self._conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
         self._conf_figure_canvas.get_tk_widget().grid(row=4, columnspan=2, sticky='nsew', padx=15, pady=15)
+
     
     # -----------------------
-    # Buttons
+    # Callback
     # -----------------------
 
     # Note that tkinter automatically passes in the selected net name when called

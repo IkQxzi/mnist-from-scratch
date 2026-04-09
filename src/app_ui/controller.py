@@ -10,6 +10,8 @@ from neural import NetworkDense
 # from gui.frames.menu import MenuFrame
 # from gui.frames.trainer import TrainerFrame
 from app_ui.frames.scanner import ScannerFrame
+from app_ui.frames.menu import MenuFrame
+
 
 class App(ctk.CTk):
     
@@ -19,6 +21,16 @@ class App(ctk.CTk):
     UPDATE_INTERVAL = 1000 # ms
     MODEL_DIR = r'C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models'
     DIGIT_IMG_SIZE = (28, 28)
+
+    # Button sizes
+    BTN_HEIGHT = 50
+    SMALL_BTN_HEIGHT = 20
+
+    # Fonts
+    SMALL_BTN_FONT = ("Arial", 14, "bold")
+    BTN_FONT = ("Arial", 25, "bold")
+    BIG_BTN_FONT = ("Arial", 35, "bold")
+    BIGGEST_BTN_FONT= ("Arial", 45, "bold")
 
     # Styling constants
     PRIMARY_BTN_COLOUR = '#1F6AA5'
@@ -164,7 +176,7 @@ class App(ctk.CTk):
 
         # Initialise frames and put into self.loaded_frames
 
-        for F in (ScannerFrame,):
+        for F in (ScannerFrame, MenuFrame):
             frame = F(container=self.container, controller=self)
             self.loaded_frames[F] = frame
             frame.grid(row=0, column=0, sticky='nsew')
