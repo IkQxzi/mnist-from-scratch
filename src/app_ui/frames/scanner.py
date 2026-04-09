@@ -3,8 +3,14 @@
 from typing import TYPE_CHECKING
 
 # 3rd party
+
+# For maths & NN stuff
 import cupy as cp
+import numpy as np
+
+# GUI stuff
 import customtkinter as ctk
+import tkinter as tk # For canvas, ctkcanvas is bad
 from PIL import Image, ImageDraw, ImageGrab, ImageOps
 import matplotlib.axes, matplotlib.figure, matplotlib.container
 from matplotlib.figure import Figure
@@ -14,13 +20,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 if TYPE_CHECKING:
     from app_ui.controller import App
 
+# For readability
+cp.set_printoptions(suppress=True, precision=3)
 
 class ScannerFrame(ctk.CTkFrame):
     
     # Constants
     USR_IMG_SIZE = (500, 500)
     SKIP_IMG_SELECT = False
-    BRUSH_SIZE = 125
 
     # Button sizes
     BTN_HEIGHT = 50
@@ -31,6 +38,10 @@ class ScannerFrame(ctk.CTkFrame):
     BTN_FONT = ("Arial", 25, "bold")
     BIG_BTN_FONT = ("Arial", 35, "bold")
     BIGGEST_BTN_FONT= ("Arial", 45, "bold")
+    
+    # Draw tab constants
+    BRUSH_SIZE = 75
+    CANVAS_SIDELENGTH = 800
 
     # Multi-use attributes
     controller: "App"
@@ -62,7 +73,7 @@ class ScannerFrame(ctk.CTkFrame):
     
     # Draw tab widgets
     _draw_tab_txt_box: ctk.CTkLabel
-    _canvas: ctk.CTkCanvas
+    _canvas: tk.Canvas
     _pil_canvas_cpy: Image.Image
     _pil_canvas_cpy_draw: ImageDraw.ImageDraw
     _clear_btn: ctk.CTkButton
@@ -212,7 +223,9 @@ class ScannerFrame(ctk.CTkFrame):
                                              corner_radius=self.controller.LBL_CORNER_RADIUS, fg_color=self.controller.PRIMARY_BTN_COLOUR,) 
 
         # For user to draw on 
-        self._canvas = ctk.CTkCanvas(self._draw_tab)
+        self._canvas = tk.Canvas(self._draw_tab, bg='white', 
+                                     height=self.CANVAS_SIDELENGTH,
+                                     width=self.CANVAS_SIDELENGTH)
 
         # We must create a ghost copy of the canvas to avoid having to work with file exports
         # For now, use (1, 1) size; match to canvas in layout method
@@ -252,19 +265,22 @@ class ScannerFrame(ctk.CTkFrame):
     def _create_results_frame(self):
 
         # So can be stuck into right column
-        self._results_frame = ctk.CTkFrame(self)
+        self._results_frame = ctk.CTkFrame(self, border_width=5)
         
-        # TODO: add gpu lbl here
+        self._active_net_lbl_r_frame = ctk.CTkLabel(self._results_frame,
+                                                    text="Active Network: NONE",
+                                                    font=self.BIGGEST_BTN_FONT,
+                                                    fg_color=self.controller.PRIMARY_LBL_COLOUR,
+                                                    corner_radius=self.controller.LBL_CORNER_RADIUS)
 
         # Prediction labels
         self._net_pred_txt_lbl = ctk.CTkLabel(self._results_frame, 
                                               text="Network Prediction:",
                                               font=self.BIG_BTN_FONT)
         
-        self._net_pred_num_lbl = ctk.CTkLabel(self._results_frame, text='X', 
-                                              height=100, width=100,
+        self._net_pred_num_lbl = ctk.CTkLabel(self._results_frame, text='N/A',
                                               fg_color=self.controller.PRIMARY_LBL_COLOUR, 
-                                              font=self.BIGGEST_BTN_FONT)
+                                              font=('Arial', 60, 'bold'))
 
 
         # Main confidence labels
@@ -272,9 +288,14 @@ class ScannerFrame(ctk.CTkFrame):
                                               text="Confidence:",
                                               font=self.BIG_BTN_FONT)
         
-        self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="XX%",
-                                              fg_color=self.controller.PRIMARY_BTN_COLOUR,
+        self._net_conf_num_lbl = ctk.CTkLabel(self._results_frame, text="N/A",
+                                              fg_color=self.controller.PRIMARY_LBL_COLOUR,
                                               font=self.BIGGEST_BTN_FONT)
+
+        self._conf_fig_title = ctk.CTkLabel(self._results_frame, text='Prediction Distribution',
+                                           font=self.BIGGEST_BTN_FONT,
+                                           fg_color=self.controller.PRIMARY_LBL_COLOUR,
+                                           corner_radius=self.controller.LBL_CORNER_RADIUS)
 
         # Initialise confidence score figure,
         # creating the attributes below
@@ -307,7 +328,7 @@ class ScannerFrame(ctk.CTkFrame):
         
         # Place active net name on the left middle 
         # And span 3 rows so it is the same as the metrics table on the right
-        self._active_net_name_lbl.grid(row=1, column=0, padx=100, pady=50,
+        self._active_net_name_lbl.grid(row=1, column=0, padx=5, pady=50,
                                        )
         
         # Vertically stack active net metrics on the right side
@@ -339,9 +360,9 @@ class ScannerFrame(ctk.CTkFrame):
         
         self._draw_tab_txt_box.pack(fill='x', padx=3.5, pady=5, side='top')
 
-        # Drawing canvas
-        self._canvas.pack(fill = 'both', expand=True, padx=5, pady=5)
-        self._canvas.configure(width=self._canvas.winfo_height())
+        # Drawing canvas, do not fill space otherwise it will not be square
+        self._canvas.pack(expand=True, padx=5, pady=5)
+        # self._canvas.configure(width=self._canvas.winfo_height())
 
         # Btns
         self._clear_btn.pack(fill = 'both', expand=True, padx=2.5, pady=5, side='left')
@@ -362,25 +383,34 @@ class ScannerFrame(ctk.CTkFrame):
 
     def _layout_results_frame(self):
 
-        # Split results frame in half
+        # Split results frame vertically in half
         self._results_frame.columnconfigure(index=[0, 1], weight=1)
-        self._results_frame.rowconfigure(index=[0, 1, 2], weight=1)
+        
+        # Have the row for active network and confidence titles smaller
+        # And other rows all equal
+        self._results_frame.rowconfigure(index=[0, 3], weight=1)
+        self._results_frame.rowconfigure(index=[1, 2, 4], weight=3)
+
+        self._active_net_lbl_r_frame.grid(row=0, columnspan=2, padx=15, pady=15)
 
         # Place prediction text top left
-        self._net_pred_txt_lbl.grid(row=0, column=0, sticky='nse')
+        self._net_pred_txt_lbl.grid(row=1, column=0, sticky='nse', padx=15)
     
         # Place prediciton number right of prediction text
-        self._net_pred_num_lbl.grid(row=0, column=1, sticky='nsew')
+        self._net_pred_num_lbl.grid(row=1, column=1, sticky='nsew')
 
         # Place confidence text below prediction info
-        self._net_conf_txt_lbl.grid(row=1, column=0, sticky='nse')
+        self._net_conf_txt_lbl.grid(row=2, column=0, sticky='nse', padx=15)
 
         # Place prediction output right of prediction text
-        self._net_conf_num_lbl.grid(row=1, column=1, sticky='nsew')
+        self._net_conf_num_lbl.grid(row=2, column=1, sticky='nsew')
+
+        # Put title underneath the above
+        self._conf_fig_title.grid(row=3, columnspan=2)
 
         # Place confidence graph below all the above, spanning both columns
         self._conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
-        self._conf_figure_canvas.get_tk_widget().grid(row=2, columnspan=2, sticky='nsew')
+        self._conf_figure_canvas.get_tk_widget().grid(row=4, columnspan=2, sticky='nsew', padx=15, pady=15)
     
     # -----------------------
     # Buttons
@@ -404,8 +434,8 @@ class ScannerFrame(ctk.CTkFrame):
         size = self.controller.net_infos['net_sizes'][net_index]
         
         # Update the metrics labels with the new values
-        self._selected_net_acc_lbl.configure(text=f'Accuracy: {avg_acc}')
-        self._selected_net_loss_lbl.configure(text=f'Loss: {avg_loss}')
+        self._selected_net_acc_lbl.configure(text=f'Accuracy: {float(avg_acc):.1f}%')
+        self._selected_net_loss_lbl.configure(text=f'Loss: {float(avg_loss):.2f}')
         self._selected_net_size_lbl.configure(text=f'Size: {size} layers')
 
 
@@ -427,12 +457,15 @@ class ScannerFrame(ctk.CTkFrame):
         avg_loss = self.controller.net_infos['net_losses'][net_index]
         size = self.controller.net_infos['net_sizes'][net_index]
 
-        # Update the active network name label
+        # Update the active network name label network tab
         self._active_net_name_lbl.configure(text=f'Active Network: {net_name}')
+        
+        # Do same for results frame
+        self._active_net_lbl_r_frame.configure(text=f'Active Network: {net_name}')
 
         # Update the metrics labels with the new values
-        self._active_net_acc_lbl.configure(text=f'Accuracy: {avg_acc:.1f}')
-        self._active_net_loss_lbl.configure(text=f'Loss: {avg_loss:.2f}')
+        self._active_net_acc_lbl.configure(text=f'Accuracy: {float(avg_acc):.1f}%')
+        self._active_net_loss_lbl.configure(text=f'Loss: {float(avg_loss):.2f}')
         self._active_net_size_lbl.configure(text=f'Size: {size} layers')
 
         # Show popup telling user network is selected
@@ -457,6 +490,9 @@ class ScannerFrame(ctk.CTkFrame):
 
         # Use attribute to fwd and update
         self._fwd_and_update_results_frame(self._curr_img_arr)
+
+        print(f'probs: {self.controller.network.probs}')
+        print(f'conf_scores: {self.controller.network.conf_scores}')
 
 
     def _on_u_tab_upload_click(self):
@@ -534,18 +570,78 @@ class ScannerFrame(ctk.CTkFrame):
         Set the img and its cp arr as attributes.
         '''
 
-        # Resize, greyscale
-        img = img.resize(size=self.controller.DIGIT_IMG_SIZE).convert(mode='L')
-        self._curr_img_pil = ImageOps.invert(img)
+        # Greyscale, invert bc MNIST expects white on black
+        img = img.convert(mode='L')
+        img = ImageOps.invert(img)
 
-        self._curr_img_pil.show()
+        # The bounding box of the digit
+        digit_bbox = img.getbbox()
 
-        # Convert to 2d cp arr (0-1)
-        # Keep float32 for GPU optimisations
-        curr_img_2d_arr = cp.asarray(self._curr_img_pil, dtype='float32') / 255
+        # If no digit, forward an array of nothing
+        if digit_bbox is None:
+            self._curr_img_arr = cp.zeros((1, 784), dtype='float32')
+            return
 
-        # Flatten arr to 1d
-        self._curr_img_arr = curr_img_2d_arr.flatten()
+        # Crop image so digit just touches edge
+        img_cropped = img.crop(digit_bbox)
+
+        # Will be useful for padding
+        width, height = img_cropped.size
+        aspect_ratio = width / height
+
+        # To force digit to be 20x20 px
+        if width > height:
+            new_width = 20
+            new_height = max(1, int(20 / aspect_ratio))
+        else: 
+            new_height = 20
+            new_width = max(1, int(20 * aspect_ratio))
+
+        # Resize image and use LANCZOS antialiasing
+        img_resized = img_cropped.resize(size=(new_width, new_height), resample=Image.Resampling.LANCZOS)
+
+        # Conv img to 2d arr
+        img_2d_arr = np.asarray(img_resized, dtype='float32')
+        total_img_mass = np.sum(img_2d_arr)
+
+        # Get the x & y coordinates of every px
+        y_indices, x_indices = np.indices(img_2d_arr.shape)
+        
+        # Find centre of mass (weighted avg.) as done in MNIST
+        cor_y = np.sum(y_indices * img_2d_arr) / total_img_mass
+        cor_x = np.sum(x_indices * img_2d_arr) / total_img_mass
+        
+        # Paste digit in centre of blank img
+        paste_x = int(round(14.0 - cor_x))
+        paste_y = int(round(14.0 - cor_y))
+
+        # Black 28x28 image to pad digit 4px all around
+        padded_img = Image.new('L', (28, 28), color=0)
+
+        # Place img in centre of padded img
+        padded_img.paste(im=img_resized, box=(paste_x, paste_y))
+        
+        # For debugging
+        padded_img.show() 
+
+        # Now conv padded img to cupy arr
+        padded_img_2d_arr = cp.asarray(padded_img, dtype='float32') # float32 for GPU
+        
+        # Fix contrast issues from imperfect whites
+        max_val = cp.max(padded_img_2d_arr)
+        if max_val > 0:
+            padded_img_2d_arr /= max_val
+        else:
+            padded_img_2d_arr /= 255.0 # Fallback option
+        
+        print(f'inputs:{padded_img_2d_arr}')
+        with open('net_outputs.txt', 'w') as file:
+            file.write(cp.array2string(padded_img_2d_arr))
+        
+        # Reshape to 2d arr of (1, 784) for fwding
+        print(f'2d arr: {padded_img_2d_arr.shape}')
+        self._curr_img_arr = padded_img_2d_arr.reshape(1, 784)
+        print(self._curr_img_arr.shape)
 
 
     def _setup_conf_figure(self):
@@ -563,12 +659,10 @@ class ScannerFrame(ctk.CTkFrame):
         # Add axes (mplib Axis obj)
         self._ax = self._fig.add_subplot()
 
-        # Add title 
-        self._ax.set_title('Prediction Distribution')
-
-        # Add labels to axes
+        # Add labels to axes and set them to white
         self._ax.set_ylabel('Confidence')
         self._ax.set_xlabel('Digit')
+        self._ax.tick_params(axis='both', colors='white')
 
         # Change gridlines to be white
         self._ax.tick_params(colors=grid_colour)
