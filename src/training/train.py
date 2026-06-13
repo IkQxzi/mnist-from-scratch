@@ -2,14 +2,11 @@
 
 '''
 
+# 3rd party
 import cupy as cp
-import numpy as np
 
-from neural.core.network import NetworkDense
-from neural.loss.cce import CCE
-from neural.optimisers.sgd import SGD
-
-from neural.core.datasets import get_mnist_batches
+# Internal
+from neural import NetworkDense, CCE, SGD
 
 
 def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.ndarray], hyperparams: dict) -> NetworkDense:

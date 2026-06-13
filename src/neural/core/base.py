@@ -1,6 +1,10 @@
 import cupy as cp
 
 from tools.debugging import warning_style
+from dataclasses import dataclass
+
+
+
 
 
 class Network:
@@ -153,4 +157,24 @@ class Optimiser:
         '''Update network parameters using calculated gradients/dvals.'''
 
         pass
+
+
+# Want to be constant
+# Also makes it hashable for .npz
+@dataclass(frozen=True)
+class Model:
+
+    # Can use __dict__ to get layer attributes
+    layers: list[Layer]
+    
+    # Settings used during training of this model
+    # epochs, batch_size, learning_rate, weight_decay, etc.
+    hyperparams: dict[str, int | float]
+
+    # name, timestamp, etc.
+    metadata: dict[str, str]
+
+    # Model performance on training set
+    # avg_acc, avg_loss
+    perf: dict[str, int]
 

@@ -296,7 +296,6 @@ class ScannerFrame(ctk.CTkFrame):
         self._conf_figure_canvas: FigureCanvasTkAgg
     
 
-
     # -----------------------
     # Layout
     # -----------------------
@@ -402,7 +401,7 @@ class ScannerFrame(ctk.CTkFrame):
         self._conf_figure_canvas.draw() # Acts like a canvas, must be drawn first
         self._conf_figure_canvas.get_tk_widget().grid(row=4, columnspan=2, sticky='nsew', padx=15, pady=15)
 
-    
+
     # -----------------------
     # Callback
     # -----------------------
@@ -493,7 +492,8 @@ class ScannerFrame(ctk.CTkFrame):
             img_path = r"C:\Users\ikram\Documents\Schoolwork\compsci\test_img.png"
         else:
             img_path = ctk.filedialog.askopenfilename(title="Open Image File", 
-                                          filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.ico")])
+                                          filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.ico")], 
+                                          initialdir='C://testdir')
 
         if not img_path: return
 
@@ -613,7 +613,7 @@ class ScannerFrame(ctk.CTkFrame):
         padded_img.paste(im=img_resized, box=(paste_x, paste_y))
         
         # For debugging
-        padded_img.show() 
+        # padded_img.show() 
 
         # Now conv padded img to cupy arr
         padded_img_2d_arr = cp.asarray(padded_img, dtype='float32') # float32 for GPU
@@ -653,7 +653,8 @@ class ScannerFrame(ctk.CTkFrame):
         # Add labels to axes and set them to white
         self._ax.set_ylabel('Confidence')
         self._ax.set_xlabel('Digit')
-        self._ax.tick_params(axis='both', colors='white')
+        self._ax.yaxis.label.set_color(grid_colour)
+        self._ax.xaxis.label.set_color(grid_colour)
 
         # Change gridlines to be white
         self._ax.tick_params(colors=grid_colour)

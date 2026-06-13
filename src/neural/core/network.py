@@ -109,7 +109,7 @@ class NetworkDense(Network):
     def get_pred_digit_and_conf(self) -> tuple[int, float]:
         '''Get the network's main prediction and confidence score (unrounded).'''
 
-        # Explicitly cast to int
+        # Explicitly cast to int (returns arr by default)
         pred_digit = int(cp.argmax(self.conf_scores))
         
         # cp.max always returns an arr, so cast to float
@@ -117,7 +117,7 @@ class NetworkDense(Network):
         
         return pred_digit, main_conf_score
 
-
+    
     def fwd(self, inputs: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
         '''
         Forward a set of inputs through the entire network.

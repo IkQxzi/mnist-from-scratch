@@ -1,3 +1,4 @@
+# training.saving.py
 
 import json
 
@@ -65,9 +66,6 @@ def save_model_params(network: NetworkDense, path: str, training_metadata: dict)
         
     # Keep training metadata separate from layer metadata
     metadata['training'] = training_metadata
-
-    print(metadata)
-    print(json.dumps(metadata))
 
     # Write data to singular .npz file
     cp.savez(
