@@ -5,9 +5,9 @@ import numpy as np
 import cupy as cp
 import matplotlib.pyplot as plt
 
-import neural
-from neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
-import neural.layers.activations as activations
+from mnist_from_scratch import neural
+from mnist_from_scratch.neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
+import mnist_from_scratch.neural.layers.activations as activations
 
 def test_parameter_initialisation() -> None:
     
@@ -37,7 +37,7 @@ def test_parameter_initialisation() -> None:
 
 def test_network_initialisation() -> None:
 
-    from neural.core.base import Activation, Loss
+    from mnist_from_scratch.neural.core.base import Activation, Loss
 
     # Initialise two dense layers
     layer1 = LayerDense(64, 784)
@@ -111,7 +111,7 @@ def test_fwd_propogation() -> None:
     assert cp.all((net.conf_scores >= 0) & (net.conf_scores <=100))
 
     # Check that there at least 3 activation functions with a fwd() method
-    from neural.layers import activations
+    from mnist_from_scratch.neural.layers import activations
     count = 0
     for name in activations.__all__:
         cls = getattr(activations, name)
@@ -287,7 +287,7 @@ def test_learning() -> None:
         print("Test (5c) Failed: Loss function did not correctly differentiate prediction accuracy")
 
     # Check that there is more than one loss func
-    import neural.loss
+    from mnist_from_scratch import neural
     loss_funcs = [
         name for name in dir(neural.loss) 
         if isinstance(getattr(neural.loss, name), type) and hasattr(getattr(neural.loss, name), 'calculate')
@@ -337,7 +337,7 @@ def test_learning() -> None:
 def test_parameter_saving() -> None:
 
     # Will be needed 
-    from training import save_model_params
+    from mnist_from_scratch.training import save_model_params
     import json
 
     # Init net

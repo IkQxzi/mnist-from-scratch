@@ -3,7 +3,7 @@ import time
 import cupy as cp
 import numpy as np
 
-from neural.core.base import Layer
+from mnist_from_scratch.neural.core.base import Layer
 
 
 class LayerDense(Layer):

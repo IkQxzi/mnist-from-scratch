@@ -1,8 +1,8 @@
 
 import numpy as np
 
-from neural.layers.activations import ReLU, ReLULeaky
-from tools.debugging import debug_style
+from mnist_from_scratch.neural.layers.activations import ReLU, ReLULeaky
+from mnist_from_scratch.tools.debugging import debug_style
 
 def leaky_relu_test():
     

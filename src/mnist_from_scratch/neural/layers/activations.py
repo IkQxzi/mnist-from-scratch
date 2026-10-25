@@ -7,8 +7,8 @@ Purpose:
 
 import cupy as cp
 
-from neural.core.base import Activation
-from tools.debugging import debug_style
+from mnist_from_scratch.neural.core.base import Activation
+from mnist_from_scratch.tools.debugging import debug_style
 
 
 class ReLU(Activation):

@@ -13,10 +13,10 @@ import cupy as cp
 from keras.datasets import mnist
 
 # Internal imports
-from neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD, save_params
-from neural.core import get_mnist_batches
-from training import get_best_net_acc, log_training_csv
-from tools.debugging import debug_style, warning_style
+from mnist_from_scratch.neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD, save_params
+from mnist_from_scratch.neural.core import get_mnist_batches
+from mnist_from_scratch.training import get_best_net_acc, log_training_csv
+from mnist_from_scratch.tools.debugging import debug_style, warning_style
 
 
 

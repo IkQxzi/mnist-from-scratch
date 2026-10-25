@@ -1,4 +1,4 @@
-from neural.core.datasets import get_mnist_batches
+from mnist_from_scratch.neural.core.datasets import get_mnist_batches
 
 
 def batch_test() -> None:

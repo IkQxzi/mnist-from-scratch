@@ -1,9 +1,9 @@
 from datetime import datetime
 
 # Internal
-from neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
-from neural.core import get_mnist_data
-from training import train_network, test_network, save_model_params
+from mnist_from_scratch.neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
+from mnist_from_scratch.neural.core import get_mnist_data
+from mnist_from_scratch.training import train_network, test_network, save_model_params
 
 
 def main() -> None:

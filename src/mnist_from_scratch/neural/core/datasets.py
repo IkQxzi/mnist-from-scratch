@@ -1,7 +1,7 @@
 import cupy as cp
 from keras.datasets import mnist
 
-from neural.core.data import conv_np_one_hot_cp, batch_split
+from mnist_from_scratch.neural.core.data import conv_np_one_hot_cp, batch_split
 
 def get_mnist_data() -> tuple:
     '''

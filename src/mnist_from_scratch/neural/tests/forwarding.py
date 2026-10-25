@@ -10,11 +10,11 @@ from typing import Sequence
 
 import numpy as np
 
-from neural.core.network import NetworkDense
+from mnist_from_scratch.neural.core.network import NetworkDense
 # from neural.tests import NetworkExample
-from neural.layers import activations
-from neural.layers.activations import *
-from tools.debugging import debug_style
+from mnist_from_scratch.neural.layers import activations
+from mnist_from_scratch.neural.layers.activations import *
+from mnist_from_scratch.tools.debugging import debug_style
 
 # Deprecated
 def scrap_test() -> None:

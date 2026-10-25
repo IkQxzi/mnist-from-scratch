@@ -5,12 +5,12 @@ from typing import Type
 import numpy as np
 import customtkinter as ctk
 
-from neural import NetworkDense
+from mnist_from_scratch.neural import NetworkDense
 
 # from gui.frames.menu import MenuFrame
 # from gui.frames.trainer import TrainerFrame
-from app_ui.frames.scanner import ScannerFrame
-from app_ui.frames.menu import MenuFrame
+from mnist_from_scratch.app_ui.frames.scanner import ScannerFrame
+from mnist_from_scratch.app_ui.frames.menu import MenuFrame
 
 
 class App(ctk.CTk):

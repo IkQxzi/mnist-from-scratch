@@ -13,11 +13,11 @@ import cupy as cp
 
 # Local imports
 # from .base_classes import LayerGeneric
-from neural.core.base import Network
-from neural.layers.dense import LayerDense
-from neural.layers import activations
+from mnist_from_scratch.neural.core.base import Network
+from mnist_from_scratch.neural.layers.dense import LayerDense
+from mnist_from_scratch.neural.layers import activations
 
-from tools.debugging import debug_style, warning_style
+from mnist_from_scratch.tools.debugging import debug_style, warning_style
 
 
 class NetworkDense(Network):

@@ -6,9 +6,9 @@ Last Modified: Sprint 3
 
 import cupy as cp
 
-from tools.debugging import debug_style
-from neural.core.base import Optimiser
-from neural.core.network import NetworkDense
+from mnist_from_scratch.tools.debugging import debug_style
+from mnist_from_scratch.neural.core.base import Optimiser
+from mnist_from_scratch.neural.core.network import NetworkDense
 
 
 class SGD(Optimiser):

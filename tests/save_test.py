@@ -1,6 +1,6 @@
 import numpy as np
 
-from neural import NetworkDense, save_params, LayerDense, ReLU, Softmax
+from mnist_from_scratch.neural import NetworkDense, save_params, LayerDense, ReLU, Softmax
 
 
 net = NetworkDense(

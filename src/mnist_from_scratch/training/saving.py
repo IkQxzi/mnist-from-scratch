@@ -4,9 +4,9 @@ import json
 
 import cupy as cp
 
-from neural.core.base import Model
-from neural.core.network import NetworkDense
-from neural.layers import LayerDense
+from mnist_from_scratch.neural.core.base import Model
+from mnist_from_scratch.neural.core.network import NetworkDense
+from mnist_from_scratch.neural.layers import LayerDense
 
 
 def save_model_params(model: Model, file_path: str) -> None:

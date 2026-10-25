@@ -6,7 +6,7 @@
 import cupy as cp
 
 # Internal
-from neural import NetworkDense, CCE, SGD
+from mnist_from_scratch.neural import NetworkDense, CCE, SGD
 
 
 def train_network(network: NetworkDense, training_data: tuple[cp.ndarray, cp.ndarray], hyperparams: dict) -> NetworkDense:

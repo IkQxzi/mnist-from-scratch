@@ -1,14 +1,14 @@
 import numpy as np
 
-from tools.debugging import debug_style
+from mnist_from_scratch.tools.debugging import debug_style
 
-from neural.core import NetworkDense
-from neural.layers import LayerDense, ReLU, Softmax
-from neural.core import get_mnist_batches, get_mnist_data
-from neural.tests.data import gen_test_data
-from neural.tests.dummy import gen_test_one_hot, NetworkDenseExample
-from neural.loss import CCE
-from neural.optimisers import SGD
+from mnist_from_scratch.neural.core import NetworkDense
+from mnist_from_scratch.neural.layers import LayerDense, ReLU, Softmax
+from mnist_from_scratch.neural.core import get_mnist_batches, get_mnist_data
+from mnist_from_scratch.neural.tests.data import gen_test_data
+from mnist_from_scratch.neural.tests.dummy import gen_test_one_hot, NetworkDenseExample
+from mnist_from_scratch.neural.loss import CCE
+from mnist_from_scratch.neural.optimisers import SGD
 
 
 def test_pass() -> None:

@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
-from app_ui.frames.scanner import ScannerFrame
+from mnist_from_scratch.app_ui.frames.scanner import ScannerFrame
 
 if TYPE_CHECKING:
-    from app_ui.controller import App  
+    from mnist_from_scratch.app_ui.controller import App  
 
 
 class MenuFrame(ctk.CTkFrame):

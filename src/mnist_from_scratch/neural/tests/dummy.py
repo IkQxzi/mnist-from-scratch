@@ -10,9 +10,9 @@ from typing import Sequence
 
 import numpy as np
 
-from neural.layers import activations
-from neural.core.network import NetworkDense
-from tools.debugging import debug_style
+from mnist_from_scratch.neural.layers import activations
+from mnist_from_scratch.neural.core.network import NetworkDense
+from mnist_from_scratch.tools.debugging import debug_style
 # from neural.core import NetworkNeural
 
 

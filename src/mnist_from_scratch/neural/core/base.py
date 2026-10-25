@@ -1,6 +1,6 @@
 import cupy as cp
 
-from tools.debugging import warning_style
+from mnist_from_scratch.tools.debugging import warning_style
 from dataclasses import dataclass
 
 

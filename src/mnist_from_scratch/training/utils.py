@@ -5,7 +5,7 @@ Contains logging & evaluation functions.
 import csv
 from datetime import datetime
 
-from tools.io import read_csv_file
+from mnist_from_scratch.tools.io import read_csv_file
 
 
 def get_best_net_acc(path: str) -> float:

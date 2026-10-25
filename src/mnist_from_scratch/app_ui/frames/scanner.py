@@ -18,7 +18,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # local
 if TYPE_CHECKING:
-    from app_ui.controller import App
+    from mnist_from_scratch.app_ui.controller import App
 
 # For readability
 cp.set_printoptions(suppress=True, precision=3)

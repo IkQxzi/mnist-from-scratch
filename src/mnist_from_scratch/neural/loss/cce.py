@@ -6,7 +6,7 @@ Last modified: Sprint 3
 
 import cupy as cp
 
-from neural.core.base import Loss
+from mnist_from_scratch.neural.core.base import Loss
 
 class CCE(Loss):
     '''
