@@ -1,13 +1,50 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "nea_2026"
+name = "mnist-from-scratch"
 version = "0.1.0"
+description = "Neural Network framework with similar API to PyTorch"
+readme = "README.md"
+authors = [
+    { name = "Ikramah", email = "qxzikr@hotmail.com" }
+]
+requires-python = ">=3.12"
 dependencies = [
-    "numpy"
+    "colorama>=0.4.6",
+    "cupy-cuda12x>=14.2.0",
+    "customtkinter>=6.0.0",
+    "keras>=3.15.1",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pillow>=13.0.0",
+    "pygments>=2.21.0",
+    "python-docx>=1.2.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.2",
+]
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D1",       # missing docstrings
+    "COM812",   # clashes with formatter
+    "ISC001",   # clashes with formatter
+    "CPY",      # copyright headers
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004", "ANN", "D"]  # asserts and magic numbers ok in tests
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
