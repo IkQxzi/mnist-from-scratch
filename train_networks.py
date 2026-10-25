@@ -1,9 +1,10 @@
 from datetime import datetime
 
 # Internal
-from mnist_from_scratch.neural import NetworkDense, LayerDense, ReLU, Softmax, CCE, SGD
+from mnist_from_scratch.config import MODEL_DIR
+from mnist_from_scratch.neural import LayerDense, NetworkDense, ReLU, Softmax
 from mnist_from_scratch.neural.core import get_mnist_data
-from mnist_from_scratch.training import train_network, test_network, save_model_params
+from mnist_from_scratch.training import save_model_params, test_network, train_network
 
 
 def main() -> None:
@@ -13,7 +14,7 @@ def main() -> None:
         "epochs": 999,
         "learning_rate": 0.01,
         "weight_decay": 1e-4,
-        "batch_size": 10000,
+        "batch_size": 64,
     }
 
     N_NEURONS = [784, 64, 10]
@@ -38,11 +39,13 @@ def main() -> None:
 
     # Replace colons in timestamp with dots to prevent errors with Windows file mgmt.
     timestamp = (datetime.now().isoformat(timespec="seconds")).replace(":", ".")
-    save_path = rf"C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models\{HYPERPARAMS['name']}_{avg_acc}_{avg_loss}_{len(net.layers)}_{timestamp}.npz"
+    save_path = (
+        MODEL_DIR
+        / f"{HYPERPARAMS['name']}_{avg_acc:.2f}_{avg_loss:.4f}_{len(net.layers)}_{timestamp}.npz"
+    )
 
     save_model_params(net, save_path, training_metadata)
 
 
 if __name__ == "__main__":
-    while True:
-        main()
+    main()
