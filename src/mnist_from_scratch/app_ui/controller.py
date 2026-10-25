@@ -6,6 +6,7 @@ import numpy as np
 import customtkinter as ctk
 
 from mnist_from_scratch.neural import NetworkDense
+from mnist_from_scratch.config import MODEL_DIR
 
 # from gui.frames.menu import MenuFrame
 # from gui.frames.trainer import TrainerFrame
@@ -18,9 +19,6 @@ class App(ctk.CTk):
     WIN_TITLE = "Handwritten Digit Recogniser Thingy"
     RESOLUTION = "1920x1080"
     UPDATE_INTERVAL = 1000  # ms
-    MODEL_DIR = (
-        r"C:\Users\ikram\Documents\Schoolwork\compsci\NEA 2026\src\training\models"
-    )
     DIGIT_IMG_SIZE = (28, 28)
 
     # Button sizes
@@ -56,6 +54,9 @@ class App(ctk.CTk):
         :type frame_list: list[ctk.CTkFrame]
         """
 
+        if not MODEL_DIR.exists():
+            MODEL_DIR.mkdir(parents=True)
+
         super().__init__()
         print("Updating net infos...")
 
@@ -89,7 +90,7 @@ class App(ctk.CTk):
         net_fname = self.net_infos["net_fnames"][net_index]
 
         # Load network container and extract metadata
-        raw_net_cont = np.load(file=rf"{App.MODEL_DIR}\{net_fname}")
+        raw_net_cont = np.load(file=(MODEL_DIR / f"{net_fname}"))
         raw_metadata_json_str = str(raw_net_cont["metadata"])
         metadata = json.loads(raw_metadata_json_str)
         training_metadata = metadata["training"]
@@ -121,7 +122,7 @@ class App(ctk.CTk):
 
         net_infos = {
             # Get file names at cls-specified directory
-            "net_fnames": os.listdir(path=App.MODEL_DIR),
+            "net_fnames": os.listdir(path=MODEL_DIR),
             "net_names": [],
             "net_accs": [],
             "net_losses": [],
