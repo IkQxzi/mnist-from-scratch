@@ -1,6 +1,4 @@
-'''
-
-'''
+""" """
 
 # Hyperparameters
 EPOCHS = 30

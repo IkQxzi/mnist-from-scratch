@@ -9,4 +9,3 @@ def gen_test_data(n_batches: int, n_inputs: int) -> np.ndarray:
 
 
 # def gen_one_hot(n_)
-    

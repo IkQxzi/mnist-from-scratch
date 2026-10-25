@@ -7,4 +7,3 @@ from mnist_from_scratch.app_ui.frames.menu import MenuFrame
 app = App()
 app.mainloop()
 app.show_frame(MenuFrame)
-

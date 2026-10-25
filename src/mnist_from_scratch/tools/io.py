@@ -3,21 +3,21 @@ from typing import Iterator
 
 
 def read_csv_file(path: str, delimiter: str) -> list[dict[str, str]]:
-    '''
+    """
     Reads .csv file and returns row-major list.
-    
+
     :param path: .csv file to read from
     :type path: str
     :param delimiter: delimiter of .csv file
     :type delimiter: str
     :return: File contents as dict.
     :rtype: Iterator[dict[str, str]]
-    '''
+    """
 
-    with open(path, 'r') as file:
+    with open(path, "r") as file:
         content = csv.DictReader(file, delimiter=delimiter)
 
         # Don't want to have to keep file open
         content = list(content)
-    
+
     return content
