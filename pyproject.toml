@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "colorama>=0.4.6",
-    "cupy-cuda12x>=14.2.0",
+    "cupy-cuda12x[ctk]>=14.2.0",
     "customtkinter>=6.0.0",
     "keras>=3.15.1",
     "matplotlib>=3.11.2",
