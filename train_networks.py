@@ -11,7 +11,7 @@ def main() -> None:
 
     HYPERPARAMS = {
         "name": f"ikqnet{datetime.now().isoformat(timespec='seconds')}",
-        "epochs": 999,
+        "epochs": 30,
         "learning_rate": 0.01,
         "weight_decay": 1e-4,
         "batch_size": 64,
@@ -41,7 +41,7 @@ def main() -> None:
     timestamp = (datetime.now().isoformat(timespec="seconds")).replace(":", ".")
     save_path = (
         MODEL_DIR
-        / f"{HYPERPARAMS['name']}_{avg_acc:.2f}_{avg_loss:.4f}_{len(net.layers)}_{timestamp}.npz"
+        / f"{HYPERPARAMS['name']}_{avg_acc:.2f}_{len(net.layers)}_{avg_loss:.4f}_{timestamp}.npz"
     )
 
     save_model_params(net, save_path, training_metadata)

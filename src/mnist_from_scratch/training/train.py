@@ -4,7 +4,7 @@
 import cupy as cp
 
 # Internal
-from mnist_from_scratch.neural import NetworkDense, CCE, SGD
+from mnist_from_scratch.neural import CCE, SGD, NetworkDense
 
 
 def train_network(
@@ -12,8 +12,7 @@ def train_network(
     training_data: tuple[cp.ndarray, cp.ndarray],
     hyperparams: dict,
 ) -> NetworkDense:
-    """
-    Train a network on the given data using the settings in hyperparams.
+    """Train a network on the given data using the settings in hyperparams.
 
     Keyword Args:
         :param network: Network to be trained.
@@ -24,7 +23,6 @@ def train_network(
         Trained network.
 
     """
-
     loss = CCE()
     optimiser = SGD(network, hyperparams["learning_rate"], hyperparams["weight_decay"])
 
@@ -32,9 +30,9 @@ def train_network(
 
     batch_size = hyperparams["batch_size"]
     for epoch in range(1, 1 + hyperparams["epochs"]):
-        # Shuffle the data for better training
-        cp.random.shuffle(x_train)
-        cp.random.shuffle(y_train)
+        # Share permutation between samples and correct classes
+        perm = cp.random.permutation(x_train.shape[0])
+        x_train, y_train = x_train[perm], y_train[perm]
 
         print(f"Epoch {epoch}...")
 
@@ -59,10 +57,7 @@ def train_network(
 
 # TODO: make this better
 def test_network(network: NetworkDense, test_data: tuple[cp.ndarray, cp.ndarray]):
-    """
-    Test a network on the given testing data, returning its average accuracy & loss.
-    """
-
+    """Test a network on the given testing data, returning its average accuracy & loss."""
     (x_test, y_test) = test_data
     n_samples = y_test.shape[0]
 
