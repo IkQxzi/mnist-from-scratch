@@ -11,13 +11,11 @@ dependencies = [
     "colorama>=0.4.6",
     "cupy-cuda12x[ctk]>=14.2.0",
     "customtkinter>=6.0.0",
-    "keras>=3.15.1",
     "matplotlib>=3.11.2",
     "numpy>=2.5.4",
     "pillow>=13.0.0",
     "pygments>=2.21.0",
     "python-docx>=1.2.0",
-    "tensorflow>=2.21.0",
 ]
 
 [build-system]

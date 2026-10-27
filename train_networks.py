@@ -3,7 +3,7 @@ from datetime import datetime
 # Internal
 from mnist_from_scratch.config import MODEL_DIR
 from mnist_from_scratch.neural import LayerDense, NetworkDense, ReLU, Softmax
-from mnist_from_scratch.neural.core import get_mnist_data
+from mnist_from_scratch.neural.core import get_clean_mnist_data
 from mnist_from_scratch.training import save_model_params, test_network, train_network
 
 
@@ -19,7 +19,7 @@ def main() -> None:
 
     N_NEURONS = [784, 64, 10]
 
-    (x_train, y_train), (x_test, y_test) = get_mnist_data()
+    (x_train, y_train), (x_test, y_test) = get_clean_mnist_data()
 
     net = NetworkDense(
         [

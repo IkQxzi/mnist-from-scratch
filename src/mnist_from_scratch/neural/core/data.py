@@ -1,12 +1,11 @@
-import numpy as np
 import cupy as cp
+import numpy as np
 
 
 # TODO: Remake this so it is not trash
 # Also test how it handles non-perfect divisor batch sizes
 def batch_split(arr: cp.ndarray, batch_size: int) -> cp.ndarray:
     """Split an array into batches of size specified, returning a list of sub-arrays."""
-
     # x_train: (60_000, 784) -> (1875, 32, 784)
     # y_train: (60_000, 10)
 
@@ -16,13 +15,11 @@ def batch_split(arr: cp.ndarray, batch_size: int) -> cp.ndarray:
     return arr_batches
 
 
-def conv_np_one_hot_cp(arr: np.ndarray) -> cp.ndarray:
-    """Convert a 1D Numpy array to a 2D one-hot encoded Cupy vector."""
-
+def conv_one_hot(arr: np.ndarray) -> cp.ndarray:
+    """Convert a 1D Cupy array to a 2D one-hot encoded Cupy vector."""
     # Ensure arr is 1D
-    assert len(arr.shape) == 1, (
-        f"Cannot create one hot vector with arr of shape {arr.shape}"
-    )
+    if len(arr.shape) != 1:
+        raise ValueError(f"Cannot create one hot vector with arr of shape {arr.shape}")
 
     # Create arr of zeros (len=10)
     # Needs to stay float32 otherwise will be upcasted to float64 in dot product
@@ -35,7 +32,6 @@ def conv_np_one_hot_cp(arr: np.ndarray) -> cp.ndarray:
 
 def get_dummy_data() -> tuple[np.ndarray, np.ndarray]:
     """Generate 3 samples of dummy data for 3 classes."""
-
     dummy_input = np.array(
         [
             [2.0, -1.0, -1.0],  # Strong feature 0 -> Should be Class 0
