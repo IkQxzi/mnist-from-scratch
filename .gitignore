@@ -10,6 +10,8 @@ wheels/
 .venv
 
 # Local-only
+*models*
+scalene-profile*
 experiments/
 .env
 .env.*

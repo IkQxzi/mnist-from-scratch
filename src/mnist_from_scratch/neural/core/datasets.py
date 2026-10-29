@@ -11,7 +11,7 @@ def _fetch_mnist_data(
 ) -> tuple[tuple[cp.ndarray, cp.ndarray], tuple[cp.ndarray, cp.ndarray]]:
     path = path.expanduser()
     if not path.exists():
-        path.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         url = "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz"
         urllib.request.urlretrieve(url, path)
 

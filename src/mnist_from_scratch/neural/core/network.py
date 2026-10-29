@@ -1,28 +1,18 @@
-"""
-Created: Sprint 1
+"""Created: Sprint 1
 Last Modified: Sprint 1
 Purpose: Create and propogate neural network
 """
 
-# Built-in imports
-import json
-
-# External imports
 import cupy as cp
 
-# Local imports
-# from .base_classes import LayerGeneric
 from mnist_from_scratch.neural.core.base import Network
-from mnist_from_scratch.neural.layers.dense import LayerDense
 from mnist_from_scratch.neural.layers import activations
-
-from mnist_from_scratch.tools.debugging import debug_style, warning_style
+from mnist_from_scratch.neural.layers.dense import LayerDense
 
 
 class NetworkDense(Network):
     def __init__(self, layers: list) -> None:
-        """
-        Initialise a neural network using the specified architecture.
+        """Initialise a neural network using the specified architecture.
 
         Keyword Args:
             layers -- The architecture of the network (as objects).
@@ -32,7 +22,6 @@ class NetworkDense(Network):
             probs -- A list of the networks predictions.
             conf_scores -- The confidence of each prediction of the network.
         """
-
         self.layers = layers  # Both dense & activation layers
 
         # Will be updated after forwarding
@@ -41,13 +30,11 @@ class NetworkDense(Network):
 
     @classmethod
     def load_pretrained(cls, raw_net_cont, layer_metadata: dict):
-        """
-        Load a NetworkDense using a container from a .npz file.
+        """Load a NetworkDense using a container from a .npz file.
 
         :param container: The container from the .npz file after being decoded from json.
         :type container: dict
         """
-
         # List of layer objects (as in __init__())
         layers = []
 
@@ -91,17 +78,11 @@ class NetworkDense(Network):
     def _calc_conf_scores(self) -> None:
         """Calculate and update self.conf_scores and self.pred_digit using self.probs."""
 
-        output_sum = cp.sum(self.probs, axis=1)  # Sum of each sample
-        self.conf_scores = cp.ones_like(self.probs)
-        for i in range(output_sum.shape[0]):
-            self.conf_scores[i] = self.probs[i] / output_sum[i]
-
-        self.conf_scores *= 100  # dec to %
-        # self.conf_scores[self.conf_scores < 0.01] = 0 # Replace small values with 0
+        # Should be much faster
+        self.conf_scores = 100 * self.probs / cp.sum(self.probs, keepdims=True)
 
     def get_pred_digit_and_conf(self) -> tuple[int, float]:
         """Get the network's main prediction and confidence score (unrounded)."""
-
         # Explicitly cast to int (returns arr by default)
         pred_digit = int(cp.argmax(self.conf_scores))
 
@@ -111,8 +92,7 @@ class NetworkDense(Network):
         return pred_digit, main_conf_score
 
     def fwd(self, inputs: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
-        """
-        Forward a set of inputs through the entire network.
+        """Forward a set of inputs through the entire network.
 
         Keyword Args:
             inputs -- The inputs to the network.
@@ -121,7 +101,6 @@ class NetworkDense(Network):
             probs -- The predictions of the network.
             conf_scores -- How confident the network is for each prediction.
         """
-
         # The inputs to the network need be passed only into the first layer
         # not any subsequent ones
         # print(debug_style(f'[NetworkDense.fwd()] Current Layer Index: 0'))
@@ -147,10 +126,7 @@ class NetworkDense(Network):
 
     # Rewrite this rubbish
     def bwd(self, **kwargs) -> None:
-        """
-        Backpropgate through layers, from output to first layer.
-        """
-
+        """Backpropgate through layers, from output to first layer."""
         # Do using kwargs to handle any output activ
         # NOTE: using kwargs is evil
         output_activ = self.layers[-1]
