@@ -11,7 +11,7 @@ def main() -> None:
 
     HYPERPARAMS = {
         "name": f"ikqnet{datetime.now().isoformat(timespec='seconds')}",
-        "epochs": 10,
+        "epochs": 30,
         "learning_rate": 0.01,
         "weight_decay": 1e-4,
         "batch_size": 64,

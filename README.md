@@ -40,8 +40,8 @@ uv run python main.py  # runs gui app
 ```
 
 ## Results
-Networks trained using this framework using pretty standard settings get around 95% accuracy on the MNIST test dataset.
-
+Networks trained using this framework using pretty standard settings get around 97.5% accuracy on the MNIST test dataset.
+- Up from 95% after ReLU gradient bug fixed
 **Settings used:** 784 (input) -> 784 -> 64 -> 10 neurons, 30 epochs, batch size 64, learning rate 0.01, weight decay 1e-4
 
 ## Retrospective
