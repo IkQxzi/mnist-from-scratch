@@ -25,6 +25,7 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.17.2",
+    "scalene>=2.4.0",
 ]
 
 [tool.ruff]
