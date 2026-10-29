@@ -1,9 +1,12 @@
 # mnist-from-scratch: A neural network framework from scratch, with a GUI to draw digits
 A framework to build neural networks trained on MNIST, made from scratch using CuPy (no ML frameworks), plus a frontend to draw digits and have trained networks guess them.
 
-![demo](demos/demo1.gif)
+![demo](demos/drawing.gif)
+![demo](demos/uploading.gif)
 
 **Status:** Complete (Sept. 2025 - Apr. 2026), no longer maintained.
+
+**Known Issues:** The pre-processing of images can have some issues if digits are not properly centred in the drawing/scanning menus.
 
 ## What it does
 1. Train a network with various settings:
