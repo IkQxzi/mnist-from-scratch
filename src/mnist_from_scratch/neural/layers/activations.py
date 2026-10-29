@@ -30,7 +30,7 @@ class ReLU(Activation):
 
         # Derivative is 1 if inputs >= 0, 0 otjherwise
         # True/False arr -> 1s & 0s
-        local_input_dvals = (self.inputs != 0).astype("float32")
+        local_input_dvals = (self.inputs >= 0).astype("float32")
 
         # Chain rule, element-wise as they are the same shape
         self.input_dvals = chain_dvals * local_input_dvals
