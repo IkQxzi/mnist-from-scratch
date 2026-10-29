@@ -5,6 +5,7 @@ A framework to build neural networks trained on MNIST, made from scratch using C
 ![demo](demos/uploading.gif)
 
 **Status:** Complete (Sept. 2025 - Apr. 2026), no longer maintained.
+
 **Known Issues:** The pre-processing of images can have some issues if digits are not properly centred in the drawing/scanning menus.
 
 ## What it does
