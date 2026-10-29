@@ -75,4 +75,4 @@ class LayerDense(Layer):
         self.input_dvals = cp.dot(chain_dvals, local_input_dvals)
 
         # derivative of biases = 1; calculate batch average
-        self.bias_dvals = cp.average(chain_dvals, axis=0)
+        self.bias_dvals = cp.sum(chain_dvals, axis=0)
